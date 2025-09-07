@@ -8,7 +8,6 @@
 --    Stage 3: The class table is indexed into Classes
 --    Stage 5: The class table's OnInit method is ran
 --    Stage 5: The children of this class are initialized (Stage 1-5) recursively
---    Stage 6: The class table's OnLoaded is ran a tick later, after all classes have been indexed and initialized
 
 -- Internal Notes ============================================================================
 -- A class has initialized <-> Classes[ID] = ClassTable
@@ -45,12 +44,6 @@ local function InitializeClass(ID,NewClass,BaseID,BaseClass)
 	Classes[ID] = NewClass
 	NewClass.Parent = BaseClass
 	if NewClass.OnInit then NewClass:OnInit(BaseClass) end
-
-	-- Load ourselves a tick later in the same order 
-	timer.simple(0, function()
-		if NewClass.OnLoaded then NewClass:OnLoaded(BaseClass) end
-		print("Loaded", NewClass)
-	end)
 
 	-- Initialize children waiting on us, the parent, to initialize
 	if Queued[ID] then
@@ -100,29 +93,29 @@ function GetClassMeta(ID)
 end
 
 -- Example test code
---[[
-local Snake = DefineClass("Snake", "Reptile")
-local Frog = DefineClass("Frog", "Reptile")
-local Reptile = DefineClass("Reptile", "Animal")
+-- local Snake = DefineClass("Snake", "Reptile")
+-- local Frog = DefineClass("Frog", "Reptile")
+-- local Reptile = DefineClass("Reptile", "Animal")
 
-local Dog = DefineClass("Dog", "Mammal")
-local Cat = DefineClass("Cat", "Mammal")
-local Mammal = DefineClass("Mammal", "Animal")
-local Animal = DefineClass("Animal")
+-- local Dog = DefineClass("Dog", "Mammal", function(Class, BaseClass)
+-- 	function Class:MakeNoise()
+-- 		print("Woof")
+-- 	end
+-- end)
 
-function Animal:MakeNoise()
-    print("Animal Noise")
-end
+-- local Cat = DefineClass("Cat", "Mammal")
+-- local Mammal = DefineClass("Mammal", "Animal", function(Class, BaseClass)
+-- 	function Class:MakeNoise()
+-- 		print("Roar")
+-- 	end
+-- end)
 
-function Mammal:MakeNoise()
-    print("Roar")
-end
+-- local Animal = DefineClass("Animal", nil, function(Class, BaseClass)
+-- 	function Class:MakeNoise()
+-- 		print("Animal Noise")
+-- 	end
+-- end)
 
-function Dog:MakeNoise()
-    print("Woof")
-end
-
-local MyDog = Dog()
-MyDog:MakeNoise()
-print(MyDog)
-]]
+-- local MyDog = Dog()
+-- MyDog:MakeNoise()
+-- print(MyDog)
