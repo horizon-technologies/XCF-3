@@ -67,7 +67,17 @@ function PANEL:AddButton(Text, OnClick)
 end
 
 -- Core elements
+function PANEL:AddMenuReload(Command)
+	local Reload = self:AddButton("Reload Menu")
+	local ReloadDesc = language.GetPhrase("You can type %s in console."):format(Command)
+	Reload:SetTooltip(ReloadDesc)
 
+	function Reload:DoClickInternal()
+		RunConsoleCommand(Command)
+	end
+
+	return Reload
+end
 
 -- Must be after methods are attached to the PANEL table.
 derma.DefineControl("XCF_Panel", "", PANEL, "Panel")
