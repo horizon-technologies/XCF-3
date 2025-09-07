@@ -1,20 +1,23 @@
 TOOL.Name = "XCF Menu"
 TOOL.Category = "Construction"
+TOOL.Command	 = nil
+TOOL.ConfigName = ""
 
-function TOOL.BuildCPanel( CPanel )
-	-- Need an XCF panel to add XCF panels to
-	local Base = vgui.Create("XCF_Panel")
-
-	-- Add our panel to the control panel	
-	CPanel:AddItem(Base)
-
-	Main = Base:AddPanel("XCF_Panel")
-	Main:AddLabel("XCF Menu Tool")
-	Main:AddLabel("XCF Menu Tool")
-	Main:AddButton("Reload Menu")
-	Main:AddLabel("XCF Menu Tool")
-	Main:AddLabel("XCF Menu Tool")
-
-	-- Main = Base:AddPanel("XCF_Panel")
-	-- AddMenu(Main)
+function InitMenuBase(Panel)
+	local Menu = vgui.Create("XCF_Panel")
+	Menu.Panel = Panel
+	Panel:AddItem(Menu)
+	return Menu
 end
+
+function CreateMainMenu(Panel)
+	local Menu = InitMenuBase(Panel)
+
+	-- Add test elements
+	Menu:AddTitle("XCF Menu")
+	Menu:AddLabel("This is a label.")
+	Menu:AddButton("This is a button.", function() print("Button clicked!") end)
+	Menu:AddLabel("More text to show how wrapping works. This label should wrap if the panel is too narrow.")
+end
+
+TOOL.BuildCPanel = CreateMainMenu

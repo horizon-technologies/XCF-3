@@ -3,7 +3,7 @@ local XCF       = XCF
 
 DEFINE_BASECLASS("Panel")
 
---- Core panel methods
+-- Core panel methods
 function PANEL:Init()
 	self.Items = {}
 end
@@ -19,8 +19,6 @@ function PANEL:AddPanel(PanelClass)
 
 	local Panel = vgui.Create(PanelClass, self)
 
-	if not IsValid(Panel) then return end
-
 	Panel:Dock(TOP)
 	Panel:DockMargin(0, 0, 0, 10)
 	Panel:InvalidateParent()
@@ -30,6 +28,10 @@ function PANEL:AddPanel(PanelClass)
 	self.Items[Panel] = true
 
 	return Panel
+end
+
+function PANEL:PerformLayout()
+	self:SizeToChildren(true, true)
 end
 
 -- Default Elements
@@ -63,6 +65,9 @@ function PANEL:AddButton(Text, OnClick)
 
 	return Panel
 end
+
+-- Core elements
+
 
 -- Must be after methods are attached to the PANEL table.
 derma.DefineControl("XCF_Panel", "", PANEL, "Panel")
