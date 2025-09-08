@@ -79,7 +79,10 @@ concommand.Add( "open_frame", function()
 	DFrame:SetSizable(true)
 	DFrame:MakePopup() -- Makes your mouse be able to move around.
 
-	local BasePanel = XCF.InitMenuReloadableBase(DFrame, "Popout", "xcf_reload_popout_menu", "CreateMainMenu")
+	local DScrollPanel = vgui.Create( "DScrollPanel", DFrame )
+	DScrollPanel:Dock( FILL )
+
+	local BasePanel = XCF.InitMenuReloadableBase(DScrollPanel, "Popout", "xcf_reload_popout_menu", "CreateMainMenu")
 	BasePanel:Dock(TOP)
-    BasePanel:DockMargin(10, 30, 10, 10)
+	BasePanel:DockMargin(10, 30, 10, 10)
 end )
