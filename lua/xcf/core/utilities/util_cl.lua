@@ -29,8 +29,9 @@ end
 --- @param Command string The command to run to reload the menu
 --- @param CreateMenu string The name of the function to call to create the menu (on the XCF table)
 function XCF.InitMenuReloadableBase(Panel, UniqueID, Command, CreateMenu)
-	-- Contains the reload button
 	local BasePanel = vgui.Create("XCF_Panel", Panel)
+
+	-- Contains the reload button
 	BasePanel:AddMenuReload(Command)
 
 	-- Actual menu exists inside this panel
@@ -48,11 +49,9 @@ function XCF.InitMenuReloadableBase(Panel, UniqueID, Command, CreateMenu)
 	return BasePanel
 end
 
-
 --- Creates the main menu for XCF given an existing XCF_Panel
 function XCF.CreateMainMenu(Menu)
 	-- Add test elements
-	Menu:AddTitle("XCF Menu")
 	local Tree = Menu:AddPanel("DTree")
 	Tree:SetSize(300, 400)
 
@@ -74,8 +73,8 @@ function XCF.CreateMainMenu(Menu)
 		{
 			Name = "Tools", Icon = "icon16/wrench.png",
 			Children = {
-				{Name = "Clientside", Icon = "icon16/user.png"},
-				{Name = "Serverside", Icon = "icon16/server.png"},
+				{Name = "Clientside Settings", Icon = "icon16/user.png"},
+				{Name = "Serverside Settings", Icon = "icon16/server.png"},
 				{Name = "Scanner", Icon = "icon16/magnifier.png"},
 				{Name = "Battle Log", Icon = "icon16/chart_bar.png"},
 			}
@@ -197,8 +196,8 @@ concommand.Add("open_frame", function()
 	DFrame:SetSizable(true)
 	DFrame:MakePopup() -- Makes your mouse be able to move around.
 
-	local DScrollPanel = vgui.Create( "DScrollPanel", DFrame )
-	DScrollPanel:Dock( FILL )
+	local DScrollPanel = vgui.Create("DScrollPanel", DFrame)
+	DScrollPanel:Dock(FILL)
 
 	local BasePanel = XCF.InitMenuReloadableBase(DScrollPanel, "Popout", "xcf_reload_popout_menu", "CreateMainMenu")
 	BasePanel:Dock(TOP)
