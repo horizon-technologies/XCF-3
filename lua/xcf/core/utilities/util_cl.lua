@@ -133,7 +133,7 @@ function XCF.CreateMainMenu(Menu)
 		end
 	end
 
-	--- Determines the count of 
+	--- Determines the count of visible nodes starting from the given node
 	local function ExpandedCount(Node)
 		local Count = Node:GetExpanded() and 1 or 0
 		for _, Child in pairs(Node:GetChildNodes()) do
@@ -156,7 +156,7 @@ function XCF.CreateMainMenu(Menu)
 		end
 
 		-- Set the height of the tree to the number of expanded nodes
-		local Height = (Tree.BaseCount + ExpandedCount(New.Ancestor)) * Tree:GetLineHeight()
+		local Height = (ExpandedCount(Tree:Root()) + 2) * Tree:GetLineHeight()
 		Tree:SetHeight(Height)
 
 		local NodeData = New.NodeData or {}
@@ -190,8 +190,6 @@ function XCF.CreateMainMenu(Menu)
 			Node.Ancestor = Node
 			DTree.Children = DTree.Children or {}
 			table.insert(DTree.Children, Node)
-			DTree.BaseCount = (DTree.BaseCount or 0) + 1
-			print("BaseCount:", DTree.BaseCount)
 		end
 
 		Node.Ancestor = Node.Ancestor or ParentNode.Ancestor
