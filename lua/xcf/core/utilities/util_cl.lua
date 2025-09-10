@@ -52,18 +52,104 @@ end
 function XCF.CreateMainMenu(Menu)
 	-- Add test elements
 	Menu:AddTitle("XCF Menu")
-	Menu:AddLabel("This is as label.")
-	Menu:AddButton("This is a button.", function() print("Button clicked!") end)
-	Menu:AddLabel("More text to show how wrapping works. This label should wrap if the panel is too narrow.")
-	local Image = Menu:AddPanel("DImage")
-	Image:SetImage("gm_construct/flatsign")
-	Image:SetHeight(300)
-	local Image2 = Menu:AddPanel("DImage")
-	Image2:SetImage("gm_construct/flatsign")
-	Image2:SetHeight(300)
-	local Image3 = Menu:AddPanel("DImage")
-	Image3:SetImage("gm_construct/flatsign")
-	Image3:SetHeight(300)
+	local Tree = Menu:AddPanel("DTree")
+	Tree:SetSize(300, 400)
+
+	local Clearable = Menu:AddPanel("XCF_Panel")
+
+	local function DefaultAction(Panel)
+		Panel:AddLabel("This is the default action. Select a node to see more options.")
+	end
+
+	TreeData = {
+		{
+			Name = "About", Icon = "icon16/information.png",
+			Children = {
+				{Name = "Updates", Icon = "icon16/newspaper.png"},
+				{Name = "Contact", Icon = "icon16/feed.png"},
+				{Name = "Wiki", Icon = "icon16/book_open.png"},
+			}
+		},
+		{
+			Name = "Settings", Icon = "icon16/wrench.png",
+			Children = {
+				{Name = "Clientside", Icon = "icon16/cog.png"},
+				{Name = "Serverside", Icon = "icon16/bullet_wrench.png"},
+			}
+		},
+		{
+			Name = "Entities", Icon = "icon16/brick.png",
+			Children = {
+				{
+					Name = "Weapons", Icon = "icon16/bomb.png", Children = {
+						{Name = "Guns", Icon = "icon16/gun.png"},
+						{Name = "Missiles", Icon = "icon16/wand.png"},
+					}
+				},
+				{
+					Name = "Mobility", Icon = "icon16/lorry.png", Children = {
+						{Name = "Engines", Icon = "icon16/car.png"},
+						{Name = "Gearboxes", Icon = "icon16/cog.png"},
+					}
+				},
+				{
+					Name = "Core", Icon = "icon16/heart.png", Children = {
+						{Name = "Baseplates", Icon = "icon16/shape_square.png"},
+						{Name = "Turrets", Icon = "icon16/shape_align_center.png"},
+						{Name = "Crew", Icon = "icon16/user_female.png"},
+						{Name = "Controllers", Icon = "icon16/joystick.png"}
+					}
+				},
+				{
+					Name = "Peripherals", Icon = "icon16/drive.png", Children = {
+						{Name = "Sensors", Icon = "icon16/transmit.png"},
+					},
+				},
+			}
+		}
+	}
+
+	function Tree:UpdateTree(Old, New)
+		if Old == New then return end
+
+		local NodeData = New.NodeData or {}
+
+		Clearable:ClearChildren()
+		Clearable:AddTitle(NodeData.Name)
+
+		if NodeData.Action then NodeData.Action(Clearable)
+		else DefaultAction(Clearable) end
+
+		Clearable:InvalidateLayout(true)
+		Clearable:SizeToChildren(true, true)
+	end
+
+	function Tree:OnNodeSelected(Node)
+		if self.Selected == Node then return end
+
+		self:UpdateTree(self.Selected, Node)
+
+		self.Selected = Node
+	end
+
+	-- Recursive function to add nodes and their children
+	local function AddNodeWithChildren(ParentNode, NodeData)
+		local Node = ParentNode:AddNode(NodeData.Name, NodeData.Icon)
+		Node.NodeData = NodeData
+
+		if NodeData.Children then
+			for _, ChildData in ipairs(NodeData.Children) do
+				AddNodeWithChildren(Node, ChildData)
+			end
+		end
+		return Node
+	end
+
+	-- Add all top-level nodes
+	for _, NodeData in ipairs(TreeData) do
+		local TopLevel = AddNodeWithChildren(Tree, NodeData)
+		TopLevel:ExpandRecurse(true)
+	end
 end
 
 print("redefine", XCF.CreateMainMenu)

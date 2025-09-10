@@ -66,6 +66,17 @@ function PANEL:AddButton(Text, OnClick)
 	return Panel
 end
 
+function PANEL:AddCheckbox(Text, OnChange)
+	local Panel = self:AddPanel("DCheckBoxLabel")
+	Panel:SetText(Text or "Checkbox")
+	Panel:SetFont("XCF_Control")
+	if OnChange then
+		Panel.OnChange = OnChange
+	end
+
+	return Panel
+end
+
 -- Core elements
 function PANEL:AddMenuReload(Command)
 	local Reload = self:AddButton("Reload Menu")
