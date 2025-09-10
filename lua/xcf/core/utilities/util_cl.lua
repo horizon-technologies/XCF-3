@@ -72,10 +72,12 @@ function XCF.CreateMainMenu(Menu)
 			}
 		},
 		{
-			Name = "Settings", Icon = "icon16/wrench.png",
+			Name = "Tools", Icon = "icon16/wrench.png",
 			Children = {
 				{Name = "Clientside", Icon = "icon16/user.png"},
 				{Name = "Serverside", Icon = "icon16/server.png"},
+				{Name = "Scanner", Icon = "icon16/magnifier.png"},
+				{Name = "Battle Log", Icon = "icon16/chart_bar.png"},
 			}
 		},
 		{
@@ -109,18 +111,20 @@ function XCF.CreateMainMenu(Menu)
 					},
 				},
 			}
-		},
-		{
-			Name = "Gadgets", Icon = "icon16/wrench_orange.png",
-			Children = {
-				{Name = "Scanner", Icon = "icon16/magnifier.png"},
-				{Name = "Battle Log", Icon = "icon16/chart_bar.png"},
-			}
 		}
 	}
 
 	function Tree:UpdateTree(Old, New)
 		if Old == New then return end
+
+		New:ExpandRecurse(true)
+
+		-- Collapse every other ancestor node
+		for _, Node in pairs(Tree.Children) do
+			if Node ~= New.Ancestor then
+				Node:ExpandRecurse(false)
+			end
+		end
 
 		local NodeData = New.NodeData or {}
 
@@ -143,13 +147,21 @@ function XCF.CreateMainMenu(Menu)
 	end
 
 	-- Recursive function to add nodes and their children
-	local function AddNodeWithChildren(ParentNode, NodeData)
+	function AddNodeWithChildren(DTree, ParentNode, NodeData)
 		local Node = ParentNode:AddNode(NodeData.Name, NodeData.Icon)
 		Node.NodeData = NodeData
 
+		if ParentNode == DTree then
+			Node.Ancestor = Node
+			DTree.Children = DTree.Children or {}
+			table.insert(DTree.Children, Node)
+		end
+
+		Node.Ancestor = Node.Ancestor or ParentNode.Ancestor
+
 		if NodeData.Children then
 			for _, ChildData in ipairs(NodeData.Children) do
-				AddNodeWithChildren(Node, ChildData)
+				AddNodeWithChildren(DTree, Node, ChildData)
 			end
 		end
 		return Node
@@ -157,7 +169,7 @@ function XCF.CreateMainMenu(Menu)
 
 	-- Add all top-level nodes
 	for _, NodeData in ipairs(TreeData) do
-		AddNodeWithChildren(Tree, NodeData):ExpandRecurse(true)
+		AddNodeWithChildren(Tree, Tree, NodeData):ExpandRecurse(true)
 	end
 end
 
