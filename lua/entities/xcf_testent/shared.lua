@@ -7,7 +7,7 @@ ENT.Base = "base_anim"
 
 
 -- The name that appears in the spawnmenu.
-ENT.PrintName   = "Explosive Barrel"
+ENT.PrintName   = "XCF Explosive Barrel"
 
 ENT.Information = "Shoot to explode."
 

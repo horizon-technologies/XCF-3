@@ -1,7 +1,5 @@
 TOOL.Name = "XCF Menu"
 TOOL.Category = "Construction"
-TOOL.Command	 = nil
-TOOL.ConfigName = ""
 
 if CLIENT then
 	TOOL.BuildCPanel = function(Panel)
@@ -9,3 +7,5 @@ if CLIENT then
 		Panel:AddItem(BasePanel)
 	end
 end
+
+XCF.RegisterToolFunctions(TOOL)

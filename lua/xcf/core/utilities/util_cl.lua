@@ -23,7 +23,7 @@ do -- Custom fonts
 	})
 end
 
---- Initializes an ACF menu base panel on the provided panel.
+--- Initializes an XCF menu base panel on the provided panel.
 --- @param Panel any The panel to add the base panel to
 --- @param Command string The command to run to reload the menu
 --- @param CreateMenu string The name of the function to call to create the menu (on the XCF table)
@@ -66,26 +66,6 @@ function XCF.CreateMainMenu(Menu)
 			}
 		},
 		{
-			Name = "Tools", Icon = "icon16/wrench.png",
-			Children = {
-				{
-					Name = "Settings", Icon = "icon16/wrench_orange.png", Children = {
-						{Name = "Clientside Settings", Icon = "icon16/user.png"},
-						{Name = "Serverside Settings", Icon = "icon16/server.png"},
-					}
-				},
-				{
-					Name = "Permissions", Icon = "icon16/page_white_edit.png", Children = {
-						{Name = "Player Permissions", Icon = "icon16/group_edit.png"},
-						{Name = "Server Permissions", Icon = "icon16/server_edit.png"},
-					}
-				},
-				{Name = "Safezones", Icon = "icon16/building_add.png"},
-				{Name = "Scanner", Icon = "icon16/magnifier.png"},
-				{Name = "Battle Logger", Icon = "icon16/chart_curve.png"},
-			}
-		},
-		{
 			Name = "Entities", Icon = "icon16/brick.png",
 			Children = {
 				{
@@ -116,7 +96,27 @@ function XCF.CreateMainMenu(Menu)
 					},
 				},
 			}
-		}
+		},
+		{
+			Name = "Settings", Icon = "icon16/wrench_orange.png", Children = {
+				{Name = "Clientside Settings", Icon = "icon16/user.png"},
+				{Name = "Serverside Settings", Icon = "icon16/server.png"},
+			}
+		},
+		{
+			Name = "Permissions", Icon = "icon16/page_white_edit.png", Children = {
+				{Name = "Player Permissions", Icon = "icon16/group_edit.png"},
+				{Name = "Server Permissions", Icon = "icon16/server_edit.png"},
+			}
+		},
+		{
+			Name = "Tools", Icon = "icon16/wrench.png",
+			Children = {
+				{Name = "Safezones", Icon = "icon16/building_add.png"},
+				{Name = "Scanner", Icon = "icon16/magnifier.png"},
+				{Name = "Battle Logger", Icon = "icon16/chart_curve.png"},
+			}
+		},
 	}
 
 	local function DefaultAction(Panel)
