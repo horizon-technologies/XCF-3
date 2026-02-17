@@ -26,7 +26,7 @@ function ENT:Initialize()
 end
 
 -- Explode when damaged!
-function ENT:OnTakeDamage(damageInfo)
+function ENT:OnTakeDamage(_)
 	if self.HasExploded then
 		return -- Stop the code here if the entity already exploded.
 	end
