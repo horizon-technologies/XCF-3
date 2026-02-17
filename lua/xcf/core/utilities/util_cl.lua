@@ -49,7 +49,7 @@ function XCF.InitMenuReloadableBase(Panel, Command, CreateMenu)
 end
 
 XCF.MainMenuTreeLookup = XCF.MainMenuTreeLookup or {}
-function XCF.AddMenuItem(Order, Name, Icon, Action, Parent)
+function XCF.AddMenuItem(Order, Name, Icon, Action, Parent, Disabled)
 	XCF.MainMenuTreeLookup[Name] = {
 		Order = Order,
 		Name = Name,
@@ -68,16 +68,12 @@ function XCF.CreateMainMenu(Menu)
 
 	local Clearable = Menu:AddPanel("XCF_Panel")
 
-	-- Recursively build the forest
+	-- Build a forest from the flat lookup table (to deal with hot loading)
 	local lookup = table.Copy(XCF.MainMenuTreeLookup)
-	local tree = {}
 	for _, node in pairs(lookup) do
 		if lookup[node.Parent] then
 			table.insert(lookup[node.Parent].Children, node)
 			table.sort(lookup[node.Parent].Children, function(a, b) return a.Order < b.Order end)
-		else
-			-- No parent means it's a root node
-			table.insert(tree, node)
 		end
 	end
 
@@ -85,21 +81,11 @@ function XCF.CreateMainMenu(Menu)
 		Panel:AddLabel("This menu has not been implemented yet.")
 	end
 
-	-- TODO: Maybe BFS looks better than DFS?
 	local function ExpandRecurseSmooth(Node, Expand)
 		Node:SetExpanded(Expand)
 		for _, Child in pairs(Node:GetChildNodes()) do
 			ExpandRecurseSmooth(Child, Expand)
 		end
-	end
-
-	--- Determines the count of visible nodes starting from the given node
-	local function ExpandedCount(Node)
-		local Count = Node:GetExpanded() and 1 or 0
-		for _, Child in pairs(Node:GetChildNodes()) do
-			Count = Count + ExpandedCount(Child)
-		end
-		return Count
 	end
 
 	-- Handles what happens when a node is selected
@@ -114,10 +100,6 @@ function XCF.CreateMainMenu(Menu)
 				ExpandRecurseSmooth(Node, false)
 			end
 		end
-
-		-- Set the height of the tree to the number of expanded nodes
-		local Height = (ExpandedCount(Tree:Root()) + 2) * Tree:GetLineHeight()
-		Tree:SetHeight(Height)
 
 		local NodeData = New.NodeData or {}
 
@@ -167,6 +149,8 @@ function XCF.CreateMainMenu(Menu)
 	for _, NodeData in ipairs(lookup.Base.Children) do
 		AddNodeWithChildren(Tree, Tree, NodeData):ExpandRecurse(true)
 	end
+
+	return Tree
 end
 
 -- Pop out menu tab example
