@@ -12,8 +12,8 @@ function ENT:Initialize()
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 
-    WireLib.CreateInputs(self, {Scale = "Number"})
-    WireLib.CreateOutputs(self, {Scale = "Number"})
+	WireLib.CreateInputs(self, {Scale = "Number"})
+	WireLib.CreateOutputs(self, {Scale = "Number"})
 
-    print("test")
+	print("test")
 end
