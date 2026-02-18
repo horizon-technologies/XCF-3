@@ -1,15 +1,7 @@
-local file   = file
-local os     = os
-local string = string
-local table  = table
-local debug  = debug
-
 -- TODO: Add registration for extensions of XCF
--- TODO: Check for most up to date commit on the given branch in a server file
 -- TODO: Check local version in a client file and receive the server's version for comparison
 
 local XCF = XCF
-
 local Realm = SERVER and "Server" or "Client"
 
 --- Converts a local time to UTC for comparison
