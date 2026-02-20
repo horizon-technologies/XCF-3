@@ -90,7 +90,7 @@ end
 --- Returns the scale of an entity
 --- TODO: Unused?
 function ModelData.GetEntityScale(Entity)
-	if Entity.IsScalable and Entity.GetScale then
+	if Entity.XCFIsScalable and Entity.GetScale then
 		local Scale = Entity:GetScale()
 		return Scale
 	end
