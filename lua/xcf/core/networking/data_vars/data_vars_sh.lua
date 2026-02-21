@@ -1,5 +1,7 @@
 local XCF = XCF
 
+-----------------------------------------------------------------------------------------------
+
 XCF.DataVarTypes = XCF.DataVarTypes or {} -- Maps type names to type definitions
 XCF.DataVars = XCF.DataVars or {} -- Maps variable names to variable definitions
 XCF.DataVarIDsToNames = XCF.DataVarIDsToNames or {} -- Maps variable UUIDs to their names for reverse lookup on receive
@@ -44,7 +46,6 @@ function XCF.CanSetServerData(Player)
 	if not IsValid(Player) then return true end -- No player, probably the server
 	if Player:IsSuperAdmin() then return true end
 
-	-- TODO: implement this
 	return XCF.GetServerData("ServerDataAllowAdmin") and Player:IsAdmin()
 end
 
@@ -195,26 +196,15 @@ end
 --- Save data vars to a file. Used for persistent data on client/server and presets on client
 -- function XCF.SaveDataVarsToFile(Path, TargetPlayer, Filter) end
 
-----------------------------------------------------------
+---------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------
 
 -- Basic types
 XCF.DefineDataVarType("Bool",        net.ReadBool,        net.WriteBool)
 XCF.DefineDataVarType("String",      net.ReadString,      net.WriteString)
 XCF.DefineDataVarType("Float",       net.ReadFloat,       net.WriteFloat)
 XCF.DefineDataVarType("Double",      net.ReadDouble,      net.WriteDouble)
-
--- Signed integers (1 to 32 bits)
-for i = 1, 32 do
-	XCF.DefineDataVarType("Int" .. i, function() return net.ReadInt(i)  end,  function(v) net.WriteInt(v, i)  end)
-end
-
--- Unsigned integers (1 to 32 bits)
-for i = 1, 32 do
-	XCF.DefineDataVarType("UInt" .. i, function() return net.ReadUInt(i) end,  function(v) net.WriteUInt(v, i) end)
-end
-
-
--- Others
 XCF.DefineDataVarType("Color",       net.ReadColor,       net.WriteColor)
 XCF.DefineDataVarType("Angle",       net.ReadAngle,       net.WriteAngle)
 XCF.DefineDataVarType("Vector",      net.ReadVector,      net.WriteVector)
@@ -224,6 +214,16 @@ XCF.DefineDataVarType("Player",      net.ReadPlayer,      net.WritePlayer)
 XCF.DefineDataVarType("Table",       net.ReadTable,       net.WriteTable)
 XCF.DefineDataVarType("Data",        net.ReadData,        net.WriteData)
 XCF.DefineDataVarType("Bit",         net.ReadBit,         net.WriteBit)
+
+-- Signed integers (1 to 32 bits)
+for i = 1, 32 do
+	XCF.DefineDataVarType("Int" .. i, function() return net.ReadInt(i) end, function(v) net.WriteInt(v, i) end, {})
+end
+
+-- Unsigned integers (1 to 32 bits)
+for i = 1, 32 do
+	XCF.DefineDataVarType("UInt" .. i, function() return net.ReadUInt(i) end, function(v) net.WriteUInt(v, i) end, {})
+end
 
 ----------------------------------------------------------
 

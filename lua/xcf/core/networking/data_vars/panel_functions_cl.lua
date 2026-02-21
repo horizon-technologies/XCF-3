@@ -25,8 +25,6 @@ function PanelMeta:DefineSetter(setterName, callback)
 end
 
 function PanelMeta:BindToDataVar(Key, setterName, getterName, changeHookName)
-	local DataVar = XCF.DataVars[Key]
-
 	local suppress = false -- Need to prevent infinite loops when both panel and DataVar update each other
 
 	-- Panel -> DataVar (user changes)
@@ -55,7 +53,7 @@ function PanelMeta:BindToDataVar(Key, setterName, getterName, changeHookName)
 		suppress = false
 	end)
 
-	-- Initialize with current value
+	-- Initialize with current / default value (usnet values remain unset)
 	local initial = CLIENT and XCF.GetClientData(Key) or XCF.GetServerData(Key)
 	if initial ~= nil then
 		suppress = true
