@@ -19,16 +19,17 @@ end
 
 --- Defines data variable on the client
 local VarCounter = 0
-function XCF.DefineDataVar(Name, Group, Type, Options)
+function XCF.DefineDataVar(Name, Group, Type, Default, Options)
 	XCF.DataVars[Name] = {
 		UUID = VarCounter,
 		Group = Group,
 		Type = Type,
+		Default = Default,
 		Options = Options,
 		Values = {},
 	}
-	XCF.DataVarIDsToNames[VarCounter] = Name
 
+	XCF.DataVarIDsToNames[VarCounter] = Name
 	XCF.DataVarGroups[Group] = XCF.DataVarGroups[Group] or {}
 	XCF.DataVarGroups[Group][Name] = true
 
@@ -41,6 +42,7 @@ function XCF.CanSetServerData(Player)
 	if not IsValid(Player) then return true end -- No player, probably the server
 	if Player:IsSuperAdmin() then return true end
 
+	-- TODO: implement this
 	return XCF.GetServerBool("ServerDataAllowAdmin") and Player:IsAdmin()
 end
 
@@ -145,6 +147,23 @@ net.Receive("XCF_DV_NET", function(len, ply)
 	hook.Run("XCF_OnDataVarChanged", Key, Value) -- Notify any listeners that the variable has changed
 end)
 
+--- Returns the value of a client data variable for a specific player (or local player if on client)
+--- If not set, returns the default value for the variable from its definition
+function XCF.GetClientData(Key, Player)
+	if CLIENT then player = LocalPlayer() end
+	local DataVar = XCF.DataVars[Key]
+	if not DataVar then return end
+	return DataVar.Values[Player] or DataVar.Default
+end
+
+--- Returns the value of a server data variable
+--- If not set, returns the default value for the variable from its definition
+function XCF.GetServerData(Key)
+	local DataVar = XCF.DataVars[Key]
+	if not DataVar then return end
+	return DataVar.Values[ServerKey] or DataVar.Default
+end
+
 if SERVER then
 	-- Cleanup values when a player leaves to avoid stale data
 	hook.Add("PlayerDisconnected", "XCF_CleanupDataVars", function(ply)
@@ -205,8 +224,3 @@ XCF.DefineDataVarType("Bit",         net.ReadBit,         net.WriteBit)
 
 -- Test variable
 XCF.DefineDataVar("TestVar", "TestGroup", XCF.DataVarTypes.String)
-
-XCF.DefineDataVar("Volatility", "FateCube", XCF.DataVarTypes.Float)
-XCF.DefineDataVar("State", "FateCube", XCF.DataVarTypes.UInt8)
-XCF.DefineDataVar("Size", "FateCube", XCF.DataVarTypes.Vector)
-XCF.DefineDataVar("Material", "FateCube", XCF.DataVarTypes.String)

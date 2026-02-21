@@ -56,7 +56,7 @@ function PanelMeta:BindToDataVar(Key, setterName, getterName, changeHookName)
 	end)
 
 	-- Initialize with current value
-	local initial = CLIENT and DataVar.Values[LocalPlayer()] or DataVar.Values["Server"]
+	local initial = CLIENT and XCF.GetClientData(Key) or XCF.GetServerData(Key)
 	if initial ~= nil then
 		suppress = true
 		self[setterName](self, initial)
