@@ -208,7 +208,7 @@ function PANEL:AddPresetsBar()
 end
 
 -- TODO: Add more options etc.
-function PANEL:AddModelPrevew(Model, _)
+function PANEL:AddModelPreview(Model, _)
 	local ModelPanel    = self:AddPanel("DModelPanel")
 
 	function ModelPanel:UpdateModel(Model)

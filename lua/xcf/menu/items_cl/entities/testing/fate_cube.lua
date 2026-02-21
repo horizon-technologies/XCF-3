@@ -5,11 +5,11 @@ local function CreateFateCubeMenu(MenuPanel)
 
 	local Base = MenuPanel:AddCollapsible("Settings")
 	Base:AddPresetsBar()
-	Base:AddModelPrevew("models/hunter/blocks/cube075x075x075.mdl")
-	Base:AddSlider("Volatility", 0, 1, 2)
-	Base:AddNumberWang("Type", 0, 10)
-	Base:AddVec3Slider("Scale")
-	Base:AddTextEntry("Material")
+	Base:AddModelPreview("models/hunter/blocks/cube075x075x075.mdl"):XCFDebug("Model")
+	Base:AddSlider("Volatility", 0, 1, 2):XCFDebug("Volatility"):BindToDataVar("Volatility", "SetValue", "GetValue", "OnValueChanged")
+	Base:AddNumberWang("State", 0, 10):XCFDebug("State"):BindToDataVar("State", "SetValue", "GetValue", "OnValueChanged")
+	Base:AddVec3Slider("Scale"):XCFDebug("Scale")
+	Base:AddTextEntry("Material"):XCFDebug("Material"):BindToDataVar("Material", "SetValue", "GetValue", "OnValueChange")
 end
 
 XCF.AddMenuItem(1, "Fate Cube", "icon16/bricks.png", CreateFateCubeMenu, "Testing")

@@ -3,6 +3,7 @@ local XCF = XCF
 XCF.DataVarTypes = XCF.DataVarTypes or {} -- Maps type names to type definitions
 XCF.DataVars = XCF.DataVars or {} -- Maps variable names to variable definitions
 XCF.DataVarIDsToNames = XCF.DataVarIDsToNames or {} -- Maps variable UUIDs to their names for reverse lookup on receive
+XCF.DataVarGroups = XCF.DataGroups or {} -- Maps group names to lists of variable names
 
 local TypeCounter = 0
 function XCF.DefineDataVarType(Name, ReadFunc, WriteFunc, Options)
@@ -27,6 +28,10 @@ function XCF.DefineDataVar(Name, Group, Type, Options)
 		Values = {},
 	}
 	XCF.DataVarIDsToNames[VarCounter] = Name
+
+	XCF.DataVarGroups[Group] = XCF.DataVarGroups[Group] or {}
+	XCF.DataVarGroups[Group][Name] = true
+
 	VarCounter = VarCounter + 1
 	return XCF.DataVars[Name]
 end
@@ -137,6 +142,7 @@ net.Receive("XCF_DV_NET", function(len, ply)
 		if SyncServerRealm then DataVar.Values[ServerKey] = Value
 		else DataVar.Values[LocalPlayer()] = Value end
 	end
+	hook.Run("XCF_OnDataVarChanged", Key, Value) -- Notify any listeners that the variable has changed
 end)
 
 if SERVER then
@@ -161,10 +167,10 @@ if SERVER then
 end
 
 --- Load data vars from a file. Used for persistent data on client/server and presets on client
--- function XCF.LoadDataVarsFromFile(Path, Filter, Blacklist) end
+-- function XCF.LoadDataVarsFromFile(Path, TargetPlayer, Filter) end
 
 --- Save data vars to a file. Used for persistent data on client/server and presets on client
--- function XCF.SaveDataVarsToFile(Path, Filter, BlackList) end
+-- function XCF.SaveDataVarsToFile(Path, TargetPlayer, Filter) end
 
 ----------------------------------------------------------
 
@@ -199,3 +205,8 @@ XCF.DefineDataVarType("Bit",         net.ReadBit,         net.WriteBit)
 
 -- Test variable
 XCF.DefineDataVar("TestVar", "TestGroup", XCF.DataVarTypes.String)
+
+XCF.DefineDataVar("Volatility", "FateCube", XCF.DataVarTypes.Float)
+XCF.DefineDataVar("State", "FateCube", XCF.DataVarTypes.UInt8)
+XCF.DefineDataVar("Size", "FateCube", XCF.DataVarTypes.Vector)
+XCF.DefineDataVar("Material", "FateCube", XCF.DataVarTypes.String)
