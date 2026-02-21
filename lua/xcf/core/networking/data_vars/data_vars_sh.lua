@@ -4,7 +4,7 @@ do -- Macros for defining data variables and their types
 	XCF.DataVarTypes = XCF.DataVarTypes or {} -- Maps type names to type definitions
 	XCF.DataVars = XCF.DataVars or {} -- Maps variable names to variable definitions
 	XCF.DataVarIDsToNames = XCF.DataVarIDsToNames or {} -- Maps variable UUIDs to their names for reverse lookup on receive
-	XCF.DataVarGroups = XCF.DataGroups or {} -- Maps group names to lists of variable names
+	XCF.DataVarGroups = XCF.DataVarGroups or {} -- Maps group names to lists of variable names
 
 	local TypeCounter = 0
 	function XCF.DefineDataVarType(Name, ReadFunc, WriteFunc, Options)
@@ -21,21 +21,25 @@ do -- Macros for defining data variables and their types
 	--- Defines data variable on the client
 	local VarCounter = 0
 	function XCF.DefineDataVar(Name, Group, Type, Default, Options)
-		XCF.DataVars[Name] = {
+		local ExistingDataVar = XCF.DataVars[Name]
+
+		local NewDataVar = {
 			UUID = VarCounter,
 			Group = Group,
 			Type = Type,
 			Default = Default,
 			Options = Options,
-			Values = {},
+			Values = ExistingDataVar and ExistingDataVar.Values or {} -- Preserve existing values if redefining the variable,
 		}
+
+		XCF.DataVars[Name] = NewDataVar
 
 		XCF.DataVarIDsToNames[VarCounter] = Name
 		XCF.DataVarGroups[Group] = XCF.DataVarGroups[Group] or {}
 		XCF.DataVarGroups[Group][Name] = true
 
 		VarCounter = VarCounter + 1
-		return XCF.DataVars[Name]
+		return NewDataVar
 	end
 end
 
@@ -121,31 +125,6 @@ do -- Managing data variable synchronization and networking
 		hook.Run("XCF_OnDataVarChanged", Key, Value) -- Notify any listeners that the variable has changed
 	end)
 
-	--- Returns whether a client is allowed to set a server datavars
-	function XCF.CanSetServerData(Player)
-		if not IsValid(Player) then return true end -- No player, probably the server
-		if Player:IsSuperAdmin() then return true end
-
-		return XCF.GetServerData("ServerDataAllowAdmin") and Player:IsAdmin()
-	end
-
-	--- Returns the value of a client data variable for a specific player (or local player if on client)
-	--- If not set, returns the default value for the variable from its definition
-	function XCF.GetClientData(Key, Player)
-		if CLIENT then player = LocalPlayer() end
-		local DataVar = XCF.DataVars[Key]
-		if not DataVar then return end
-		return DataVar.Values[Player] or DataVar.Default
-	end
-
-	--- Returns the value of a server data variable
-	--- If not set, returns the default value for the variable from its definition
-	function XCF.GetServerData(Key)
-		local DataVar = XCF.DataVars[Key]
-		if not DataVar then return end
-		return DataVar.Values[ServerKey] or DataVar.Default
-	end
-
 	if SERVER then
 		-- Cleanup values when a player leaves to avoid stale data
 		hook.Add("PlayerDisconnected", "XCF_CleanupDataVars", function(ply)
@@ -161,23 +140,88 @@ do -- Managing data variable synchronization and networking
 			for _, DataVar in pairs(XCF.DataVars) do
 				local value = DataVar.Values["Server"]
 				if value ~= nil then
-					print("Syncing server data var '" .. DataVar.Name .. "' for player " .. ply:Nick())
 					SendDataVar(DataVar, value, true, ply)
 				end
 			end
 		end)
 	end
+
+	--- Returns whether a client is allowed to set a server datavars
+	function XCF.CanSetServerData(Player)
+		if not IsValid(Player) then return true end -- No player, probably the server
+		if Player:IsSuperAdmin() then return true end
+
+		return XCF.GetServerData("ServerDataAllowAdmin") and Player:IsAdmin()
+	end
+
+	--- Returns the value of a client data variable for a specific player (or local player if on client)
+	--- If not set, returns the default value for the variable from its definition
+	function XCF.GetClientData(Key, Player, IgnoreDefaults)
+		if CLIENT then Player = LocalPlayer() end
+		local DataVar = XCF.DataVars[Key]
+		if not DataVar then return end
+		return DataVar.Values[Player] or (IgnoreDefaults and nil or DataVar.Default)
+	end
+
+	--- Returns the value of a server data variable
+	--- If not set, returns the default value for the variable from its definition
+	function XCF.GetServerData(Key, _, IgnoreDefaults)
+		local DataVar = XCF.DataVars[Key]
+		if not DataVar then return end
+		return DataVar.Values[ServerKey] or (IgnoreDefaults and nil or DataVar.Default)
+	end
+
+	--- Helper that assumes server realm on the server or the local player on the client
+	function XCF.GetSharedData(Key, IgnoreDefaults)
+		if SERVER then return XCF.GetServerData(Key, nil, IgnoreDefaults)
+		else return XCF.GetClientData(Key, nil, IgnoreDefaults) end
+	end
+
+	--- Helper that assumes server realm on the server or the local player on the client
+	function XCF.SetSharedData(Key, Value)
+		if SERVER then XCF.SetServerData(Key, Value)
+		else XCF.SetClientData(Key, Value) end
+	end
 end
 
-do -- Handling persistence
-	print()
-	--- Load data vars from a file. Used for persistent data on client/server and presets on client
-	-- function XCF.LoadDataVarsFromFile(Path, TargetPlayer, Filter) end
+do -- Handling persistence across sessions through file storage (for presets / server settings)
+	local BasePath = "xcf_data_vars/"
 
-	--- Save data vars to a file. Used for persistent data on client/server and presets on client
-	-- function XCF.SaveDataVarsToFile(Path, TargetPlayer, Filter) end
+	-- STILL WIP
+
+	--- Load data vars from a file into the local player / server
+	function XCF.LoadDataVarsFromFile(SubPath, Group)
+		local Path = BasePath .. SubPath
+		if not file.Exists(Path, "DATA") then return end
+
+		local Data = util.JSONToTable(file.Read(Path, "DATA"))
+		if not Data then return end
+
+		for Name, _ in pairs(XCF.DataVarGroups[Group] or {}) do
+			if Data[Name] ~= nil then
+				XCF.SetSharedData(Name, Data[Name])
+			end
+		end
+	end
+
+	--- Save data vars to a file from the local player / server.
+	function XCF.SaveDataVarsToFile(SubPath, Group)
+		local Path = BasePath .. SubPath
+		local Data = {}
+
+		-- Implicitly avoids saving any variables that aren't defined in the group (key = nil)
+		for Name, _ in pairs(XCF.DataVarGroups[Group] or {}) do
+			local DataVar = XCF.DataVars[Name]
+			if DataVar then Data[Name] = XCF.GetSharedData(Name, true) end
+		end
+
+		-- print(util.TableToJSON(Data, true))
+
+		file.Write(Path, util.TableToJSON(Data, true))
+	end
 end
 
+-- TODO: Add verification for security reasons
 do -- Defining default data variables and types
 	-- Basic types
 	XCF.DefineDataVarType("Bool",        net.ReadBool,        net.WriteBool)

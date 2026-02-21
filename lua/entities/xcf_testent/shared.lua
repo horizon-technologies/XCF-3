@@ -5,6 +5,7 @@ ENT.PrintName      = "XCF scalable test entity"
 ENT.WireDebugName  = "XCF scalable test entity"
 ENT.Spawnable = true
 
+local XCF = XCF
 XCF.DefineDataVar("Volatility", "FateCube", XCF.DataVarTypes.Float, 0)
 XCF.DefineDataVar("State", "FateCube", XCF.DataVarTypes.UInt8, 0)
 XCF.DefineDataVar("Size", "FateCube", XCF.DataVarTypes.Vector, Vector(1, 1, 1))
