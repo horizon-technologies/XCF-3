@@ -1,6 +1,7 @@
 local XCF = XCF
 
 -- TODO: Maybe consider using group as a scope to avoid name conflicts?
+-- TODO: determine if there are looping issues with the menu
 
 do -- Macros for defining data variables and their types
 	XCF.DataVarTypes = XCF.DataVarTypes or {} -- Maps type names to type definitions
@@ -11,6 +12,7 @@ do -- Macros for defining data variables and their types
 	local TypeCounter = 0
 	function XCF.DefineDataVarType(Name, ReadFunc, WriteFunc, Options)
 		XCF.DataVarTypes[Name] = {
+			Name = Name,
 			UUID = TypeCounter,
 			Read = ReadFunc,
 			Write = WriteFunc,
@@ -26,6 +28,7 @@ do -- Macros for defining data variables and their types
 		local ExistingDataVar = XCF.DataVars[Name]
 
 		local NewDataVar = {
+			Name = Name,
 			UUID = VarCounter,
 			Group = Group,
 			Type = Type,
@@ -67,6 +70,8 @@ do -- Managing data variable synchronization and networking
 		else
 			net.SendToServer()
 		end
+		-- print("Sent data var", XCF.DataVarIDsToNames[DataVar.UUID], "with value", Value)
+		hook.Run("XCF_OnDataVarChanged", DataVar.Name, Value) -- Notify our realm before we send
 	end
 
 	--- Synchronizes server data with the other realm
@@ -90,6 +95,8 @@ do -- Managing data variable synchronization and networking
 		-- Called from client: use local player
 		-- Called from server: use player argument or all players if nil
 		local PlayersToSync = CLIENT and {LocalPlayer()} or (TargetPlayer and {TargetPlayer} or player.GetAll())
+		-- print("SetClientData", Key, Value, TargetPlayer)
+		-- PrintTable(PlayersToSync)
 
 		-- Iterate over the player(s) and update their values
 		for _, ply in ipairs(PlayersToSync) do
