@@ -1,4 +1,6 @@
 local function CreateFateCubeMenu(MenuPanel)
+	XCF.SetClientData("SpawnClass", "ToolGun", "xcf_testent")
+
 	MenuPanel:AddLabel("Cube that changes state randomly when its wire input is triggered.\nInteracts with linked boxes.")
 
 	-- Persistence testing

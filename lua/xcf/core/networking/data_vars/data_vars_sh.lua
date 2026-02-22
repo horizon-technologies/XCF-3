@@ -275,4 +275,6 @@ do -- Defining default data variables and types
 	XCF.DefineDataVar("TestVar", "TestGroup", XCF.DataVarTypesByName.String)
 
 	XCF.DefineDataVar("ServerDataAllowAdmin", "ServerSettings", XCF.DataVarTypesByName.Bool, false)
+
+	XCF.DefineDataVar("SpawnClass", "ToolGun", XCF.DataVarTypesByName.String, "xcf_testent")
 end
