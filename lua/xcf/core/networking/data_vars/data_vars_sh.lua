@@ -8,6 +8,7 @@ do -- Macros for defining data variables and their types
 	XCF.DataVars = XCF.DataVars or {} -- Maps variable names to variable definitions
 	XCF.DataVarIDsToNames = XCF.DataVarIDsToNames or {} -- Maps variable UUIDs to their names for reverse lookup on receive
 	XCF.DataVarGroups = XCF.DataVarGroups or {} -- Maps group names to lists of variable names
+	XCF.DataVarGroupsOrdered = XCF.DataVarGroupsOrdered or {} -- Maps group names to lists of variable names
 
 	local TypeCounter = 0
 	function XCF.DefineDataVarType(Name, ReadFunc, WriteFunc, Options)
@@ -42,6 +43,8 @@ do -- Macros for defining data variables and their types
 		XCF.DataVarIDsToNames[VarCounter] = Name
 		XCF.DataVarGroups[Group] = XCF.DataVarGroups[Group] or {}
 		XCF.DataVarGroups[Group][Name] = true
+		XCF.DataVarGroupsOrdered[Group] = XCF.DataVarGroupsOrdered[Group] or {}
+		table.insert(XCF.DataVarGroupsOrdered[Group], Name)
 
 		VarCounter = VarCounter + 1
 		return NewDataVar
@@ -257,31 +260,78 @@ do -- Handling persistence across sessions through file storage (for presets / s
 	end
 end
 
+do -- Automatic Menu Generation
+	function XCF.CreatePanelFromDataVar(Menu, DataVar)
+		if not DataVar.Type.Options.CreatePanel then return end
+		local Panel = DataVar.Type.Options.CreatePanel(Menu, DataVar)
+		return Panel
+	end
+
+	function XCF.CreatePanelsFromDataVars(Menu, Group)
+		local Panels = {}
+		for _, Name in ipairs(XCF.DataVarGroupsOrdered[Group] or {}) do
+			local DataVar = XCF.DataVars[Name]
+			if DataVar then
+				Panels[Name] = XCF.CreatePanelFromDataVar(Menu, DataVar)
+			end
+		end
+		return Panels
+	end
+end
+
 -- TODO: Add verification for security reasons
 do -- Defining default data variables and types
+	local CreateSliderMenu = function(Menu, DataVar)
+		return Menu:AddSlider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name)
+	end
+
+	local CreateWangMenu = function(Menu, DataVar)
+		return Menu:AddNumberWang(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name)
+	end
+
 	-- Basic types
-	XCF.DefineDataVarType("Bool",        net.ReadBool,        net.WriteBool)
-	XCF.DefineDataVarType("String",      net.ReadString,      net.WriteString)
-	XCF.DefineDataVarType("Float",       net.ReadFloat,       net.WriteFloat)
-	XCF.DefineDataVarType("Double",      net.ReadDouble,      net.WriteDouble)
-	XCF.DefineDataVarType("Color",       net.ReadColor,       net.WriteColor)
-	XCF.DefineDataVarType("Angle",       net.ReadAngle,       net.WriteAngle)
-	XCF.DefineDataVarType("Vector",      net.ReadVector,      net.WriteVector)
-	XCF.DefineDataVarType("Normal",      net.ReadNormal,      net.WriteNormal)
-	XCF.DefineDataVarType("Entity",      net.ReadEntity,      net.WriteEntity)
-	XCF.DefineDataVarType("Player",      net.ReadPlayer,      net.WritePlayer)
-	XCF.DefineDataVarType("Table",       net.ReadTable,       net.WriteTable)
-	XCF.DefineDataVarType("Data",        net.ReadData,        net.WriteData)
-	XCF.DefineDataVarType("Bit",         net.ReadBit,         net.WriteBit)
+	XCF.DefineDataVarType("Bool", net.ReadBool, net.WriteBool, {
+		CreatePanel = function(Menu, DataVar) return Menu:AddCheckbox(DataVar.Name):BindToDataVar(DataVar.Name) end,
+	})
+
+	XCF.DefineDataVarType("String", net.ReadString, net.WriteString, {
+		CreatePanel = function(Menu, DataVar) return Menu:AddTextEntry(DataVar.Name):BindToDataVar(DataVar.Name) end,
+	})
+
+	XCF.DefineDataVarType("Float", net.ReadFloat, net.WriteFloat, {
+		CreatePanel = CreateSliderMenu,
+	})
+
+	XCF.DefineDataVarType("Double", net.ReadDouble, net.WriteDouble, {
+		CreatePanel = CreateSliderMenu,
+	})
+
+	XCF.DefineDataVarType("Color", net.ReadColor, net.WriteColor, {})
+	XCF.DefineDataVarType("Angle", net.ReadAngle, net.WriteAngle, {})
+
+	XCF.DefineDataVarType("Vector", net.ReadVector, net.WriteVector, {
+		CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max):BindToDataVar(DataVar.Name) end,
+	})
+
+	XCF.DefineDataVarType("Normal", net.ReadNormal, net.WriteNormal, {})
+	XCF.DefineDataVarType("Entity", net.ReadEntity, net.WriteEntity, {})
+	XCF.DefineDataVarType("Player", net.ReadPlayer, net.WritePlayer, {})
+	XCF.DefineDataVarType("Table", net.ReadTable, net.WriteTable, {})
+	XCF.DefineDataVarType("Data", net.ReadData, net.WriteData, {})
+	XCF.DefineDataVarType("Bit", net.ReadBit, net.WriteBit, {})
 
 	-- Signed integers (1 to 32 bits)
 	for i = 1, 32 do
-		XCF.DefineDataVarType("Int" .. i, function() return net.ReadInt(i) end, function(v) net.WriteInt(v, i) end, {})
+		XCF.DefineDataVarType("Int" .. i, function() return net.ReadInt(i) end, function(v) net.WriteInt(v, i) end, {
+			CreatePanel = CreateWangMenu,
+		})
 	end
 
 	-- Unsigned integers (1 to 32 bits)
 	for i = 1, 32 do
-		XCF.DefineDataVarType("UInt" .. i, function() return net.ReadUInt(i) end, function(v) net.WriteUInt(v, i) end, {})
+		XCF.DefineDataVarType("UInt" .. i, function() return net.ReadUInt(i) end, function(v) net.WriteUInt(v, i) end, {
+			CreatePanel = CreateWangMenu,
+		})
 	end
 
 	----------------------------------------------------------

@@ -93,6 +93,10 @@ function PANEL:AddCheckbox(Text)
 	Panel:SetFont("XCF_Control")
 	Panel:SetDark(true)
 
+	function Panel:BindToDataVar(DataVar)
+		self:BindToDataVarAdv(DataVar, "SetChecked", "GetChecked", "OnChange")
+	end
+
 	return Panel
 end
 
@@ -107,6 +111,10 @@ function PANEL:AddSlider(Title, Min, Max, Decimals)
 	Panel:SetDark(true)
 
 	Panel.Label:SetFont("XCF_Control")
+
+	function Panel:BindToDataVar(DataVar)
+		self:BindToDataVarAdv(DataVar, "SetValue", "GetValue", "OnValueChanged")
+	end
 
 	return Panel
 end
@@ -125,6 +133,10 @@ function PANEL:AddNumberWang(Label, Min, Max, Decimals)
 	Text:SetFont("XCF_Control")
 	Text:SetDark(true)
 	Text:Dock(TOP)
+
+	function Base:BindToDataVar(DataVar)
+		Wang:BindToDataVarAdv(DataVar, "SetValue", "GetValue", "OnValueChanged")
+	end
 
 	return Wang, Text
 end
@@ -163,6 +175,11 @@ function PANEL:AddTextEntry(LabelText)
 	local Entry = Base:AddPanel("DTextEntry")
 
 	Label:Dock(LEFT)
+
+	function Entry:BindToDataVar(DataVar)
+		self:BindToDataVarAdv(DataVar, "SetText", "GetText", "OnTextChanged")
+	end
+
 	return Entry, Base, Label
 end
 
