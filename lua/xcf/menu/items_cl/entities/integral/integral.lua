@@ -1,4 +1,4 @@
-XCF.AddMenuItem(1, "Baseplates", "icon16/shape_square.png", nil, "Integral")
+
 XCF.AddMenuItem(2, "Turrets", "icon16/shape_align_center.png", nil, "Integral")
 XCF.AddMenuItem(3, "Crew", "icon16/user_female.png", nil, "Integral")
 XCF.AddMenuItem(4, "Controllers", "icon16/controller.png", nil, "Integral")

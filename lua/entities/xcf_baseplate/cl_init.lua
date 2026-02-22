@@ -1,0 +1,1 @@
+include("shared.lua") -- This runs shared.lua on the client

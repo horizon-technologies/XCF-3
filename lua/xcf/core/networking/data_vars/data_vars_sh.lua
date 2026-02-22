@@ -3,6 +3,8 @@ local XCF = XCF
 -- TODO: Maybe consider using group as a scope to avoid name conflicts?
 -- TODO: determine if there are looping issues with the menu
 
+-- TODO: Fix variable redefinition when hotloading from other files
+
 do -- Macros for defining data variables and their types
 	XCF.DataVarTypesByName = XCF.DataVarTypesByName or {} -- Maps name -> type definition
 
