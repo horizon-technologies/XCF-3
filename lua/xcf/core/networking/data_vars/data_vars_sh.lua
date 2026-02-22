@@ -195,6 +195,16 @@ do -- Managing data variable synchronization and networking
 		if SERVER then XCF.SetServerData(Key, Value)
 		else XCF.SetClientData(Key, Value) end
 	end
+
+	-- TODO: May want to ignore defaults and refactor other parts to use this?
+	-- Returns the current values of all data variables for a given player (or server if on server)
+	function XCF.GetDataVarValues(TargetPlayer)
+		local Results = {}
+		for Name, DataVar in pairs(XCF.DataVars) do
+			Results[Name] = DataVar.Values[TargetPlayer] or DataVar.Default
+		end
+		return Results
+	end
 end
 
 -- TODO: Handle automatic persistence and queueing over time. Also have a variable specify if it should be saved on a given realm.

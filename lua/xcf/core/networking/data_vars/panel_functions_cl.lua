@@ -60,11 +60,10 @@ function PanelMeta:BindToDataVarAdv(DataVar, setterName, getterName, changeName)
 
 	-- DataVar -> Panel (network updates)
 	hook.Add("XCF_OnDataVarChanged", "XCF_Bind_" .. tostring(self) .. "_" .. DataVar, function(key, value)
-		print("Panel XCF_OnDataVarChanged", key, value)
+		-- print("Panel XCF_OnDataVarChanged", key, value)
 		if key ~= DataVar then return end
 		if not IsValid(self) then return end
-
-		print("DataVar", DataVar, "changed to", value, "updating panel", self)
+		-- print("DataVar", DataVar, "changed to", value, "updating panel", self)
 
 		suppress = true
 		self[setterName](self, value)
