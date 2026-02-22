@@ -197,12 +197,13 @@ function PANEL:AddPresetsBar(PresetGroup)
 		XCF.ApplyPreset(value, PresetGroup)
 	end
 
-	function Dropdown:RefreshChoices()
+	function Dropdown:RefreshChoices(text)
 		XCF.LoadPresetsForGroup(PresetGroup)
 		Dropdown:Clear()
 		for Name, _ in pairs(XCF.PresetsByGroupAndName[PresetGroup] or {}) do
 			Dropdown:AddChoice(Name)
 		end
+		if text then Dropdown:ChooseOption(text) end
 	end
 
 	local RemoveButton = vgui.Create("DImageButton", Panel)
@@ -250,7 +251,7 @@ function PANEL:AddPresetsBar(PresetGroup)
 
 			XCF.AddPreset(text, PresetGroup, PresetGroup)
 			XCF.SavePreset(text, PresetGroup)
-			Dropdown:RefreshChoices()
+			Dropdown:RefreshChoices(text)
 		end)
 	end
 

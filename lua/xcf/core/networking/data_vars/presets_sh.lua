@@ -32,7 +32,7 @@ end
 --- Removes a preset by name and group. Also deletes the preset file from disk if it exists.
 function XCF.RemovePreset(Name, Group)
 	if XCF.PresetsByGroupAndName[Group][Name] then
-		local Path = BasePath .. Name .. ".txt"
+		local Path = BasePath .. "/" .. Group .. "/" .. Name .. ".txt"
 		if file.Exists(Path, "DATA") then file.Delete(Path) end
 
 		XCF.PresetsByGroupAndName[Group][Name] = nil
