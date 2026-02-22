@@ -289,9 +289,10 @@ function PANEL:AddVec3Slider(Title)
 		self.varZ:XCFDefineSetter("SetValue", PushToDataVar)
 
 		-- When the datavar changes, update all sliders.
-		hook.Add("XCF_OnDataVarChanged", "XCF_Bind_" .. tostring(self) .. "_" .. DataVar, function(changedKey, value)
+		local HookID = "XCF_Bind_" .. tostring(self) .. "_" .. DataVar
+		hook.Add("XCF_OnDataVarChanged", HookID, function(changedKey, value)
 			if changedKey ~= DataVar then return end
-			if not IsValid(self) then return end
+			if not IsValid(self) then hook.Remove("XCF_OnDataVarChanged", HookID) return end
 
 			suppress = true
 			SetValue(value)
