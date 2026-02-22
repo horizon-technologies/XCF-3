@@ -7,7 +7,7 @@
 --    Stage 2: The class metatable (makes inheritance and instantiation work) is initialized when the parent class initializes (see: InitializeClass)
 --    Stage 3: The class table is indexed into Classes
 --    Stage 5: The class table's OnInit method is ran
---    Stage 5: The children of this class are initialized (Stage 1-5) recursively
+--    Stage 6: The children of this class are initialized (Stage 1-6) recursively
 
 -- Internal Notes ============================================================================
 -- A class has initialized <-> Classes[ID] = ClassTable
@@ -16,15 +16,13 @@
 local Classes = {} --- A mapping from a class' ID to its table
 local Queued = {} -- A mapping from a class' ID to a (mapping from its children's IDs to their tables)
 
---- TODO: Determine if BaseID Still needed
 --- Initializes a class by adding its metatable and running callbacks/hooks.
 --- Recursively initializes children waiting on this class
 --- This is called when a class and its parent are both initialized
 --- @param ID string The ID of the class
 --- @param NewClass table The class table of the class
---- @param BaseID string The ID of the base class
 --- @param BaseClass table The class table of the base class
-local function InitializeClass(ID, NewClass, _, BaseClass)
+local function InitializeClass(ID, NewClass, BaseClass)
 	local ClassMeta = {
 		__index = BaseClass, -- If I don't have it, check my super (inheritance)
 		__tostring = function(self) return "Class (" .. self.ID .. ")" end,
@@ -33,7 +31,7 @@ local function InitializeClass(ID, NewClass, _, BaseClass)
 		__call = function(self, ...)
 			local obj = setmetatable({}, {
 				__index = self, -- Instances should use their class' static methods/variables if they dont have them set
-				__tostring = function(instance) return "Instance of Class(" .. instance.ID .. ")" end,
+				__tostring = function(instance) return "Instance of Class(" .. instance.ID .. ")" end, -- Avoid ambiguity/shadowing of self and the instance
 			})
 			if self.__new then self.__new(obj, ...) end -- Constructor if applicable
 			return obj
@@ -43,13 +41,15 @@ local function InitializeClass(ID, NewClass, _, BaseClass)
 
 	-- Index and Initialize ourselves
 	Classes[ID] = NewClass
+	if BaseClass then BaseClass.Children[ID] = NewClass end -- Register ourselves as a child of our parent
 	NewClass.Parent = BaseClass
+
 	if NewClass.OnInit then NewClass:OnInit(BaseClass) end
 
 	-- Initialize children waiting on us, the parent, to initialize
 	if Queued[ID] then
 		for WaitingID, WaitingClass in pairs(Queued[ID]) do
-			InitializeClass(WaitingID, WaitingClass, ID, NewClass)
+			InitializeClass(WaitingID, WaitingClass, NewClass)
 			NewClass.Children[WaitingID] = WaitingClass
 		end
 		Queued[ID] = nil
@@ -78,7 +78,7 @@ function DefineClass(ID, BaseID, OnInit)
 	end
 
 	-- Otherwise initialize
-	InitializeClass(ID, NewClass, BaseID, BaseClass)
+	InitializeClass(ID, NewClass, BaseClass)
 	return NewClass
 end
 
