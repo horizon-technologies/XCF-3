@@ -3,8 +3,6 @@ local XCF = XCF
 -- TODO: Maybe consider using group as a scope to avoid name conflicts?
 -- TODO: determine if there are looping issues with the menu
 
--- TODO: make data vars indexed by uuid, since name and group are used to avoid naming conflicts but we may want to search by group or name separately.
-
 do -- Macros for defining data variables and their types
 	XCF.DataVarTypesByName = XCF.DataVarTypesByName or {} -- Maps name -> type definition
 
@@ -15,7 +13,7 @@ do -- Macros for defining data variables and their types
 			UUID = TypeCounter,
 			Read = ReadFunc,
 			Write = WriteFunc,
-			Options = Options,
+			Options = Options or {},
 		}
 		TypeCounter = TypeCounter + 1
 		XCF.DataVarTypesByName[Name] = NewDataVarType
@@ -37,7 +35,7 @@ do -- Macros for defining data variables and their types
 			UUID = VarCounter,
 			Type = Type,
 			Default = Default,
-			Options = Options,
+			Options = Options or {},
 			Values = ExistingDataVar and ExistingDataVar.Values or {} -- Preserve existing values if redefining the variable,
 		}
 
@@ -249,7 +247,7 @@ do -- Defining default data variables and types
 	XCF.DefineDataVarType("Angle", net.ReadAngle, net.WriteAngle, {})
 
 	XCF.DefineDataVarType("Vector", net.ReadVector, net.WriteVector, {
-		CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max):BindToDataVar(DataVar.Name, DataVar.Group) end,
+		CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name, DataVar.Group) end,
 	})
 
 	XCF.DefineDataVarType("Normal", net.ReadNormal, net.WriteNormal, {})

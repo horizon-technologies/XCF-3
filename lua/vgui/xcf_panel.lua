@@ -192,6 +192,7 @@ function PANEL:AddPresetsBar(PresetGroup)
 
 	local Dropdown = vgui.Create("DComboBox", Panel)
 	Dropdown:Dock(FILL)
+	Dropdown:SetTooltip("Select a preset to apply")
 	Dropdown.OnSelect = function(_, _, value, _)
 		XCF.ApplyPreset(value, PresetGroup)
 	end
@@ -252,6 +253,8 @@ function PANEL:AddPresetsBar(PresetGroup)
 		end)
 	end
 
+	Dropdown:RefreshChoices()
+
 	return Panel
 end
 
@@ -285,12 +288,12 @@ function PANEL:AddModelPreview(Model)
 end
 
 -- Multi Elements
-function PANEL:AddVec3Slider(Title)
+function PANEL:AddVec3Slider(Title, Min, Max, Decimals)
 	local Base = self:AddPanel("XCF_Panel")
 
-	Base.varX = Base:AddSlider(Title .. " X", 0, 2, 2)
-	Base.varY = Base:AddSlider(Title .. " Y", 0, 2, 2)
-	Base.varZ = Base:AddSlider(Title .. " Z", 0, 2, 2)
+	Base.varX = Base:AddSlider(Title .. " X", Min.x, Max.x, Decimals)
+	Base.varY = Base:AddSlider(Title .. " Y", Min.y, Max.y, Decimals)
+	Base.varZ = Base:AddSlider(Title .. " Z", Min.z, Max.z, Decimals)
 
 	-- TODO: Refactor this and other panel binds to reduce code duplication?
 
@@ -316,13 +319,13 @@ function PANEL:AddVec3Slider(Title)
 		end
 
 		-- When any one slider changes, push the new vector to the DataVar
-		self.varX:XCFDefineOnChanged("OnValueChanged", PushToDataVar)
-		self.varY:XCFDefineOnChanged("OnValueChanged", PushToDataVar)
-		self.varZ:XCFDefineOnChanged("OnValueChanged", PushToDataVar)
+		self.varX:XCFHijackAfter("OnValueChanged", PushToDataVar)
+		self.varY:XCFHijackAfter("OnValueChanged", PushToDataVar)
+		self.varZ:XCFHijackAfter("OnValueChanged", PushToDataVar)
 
-		self.varX:XCFDefineSetter("SetValue", PushToDataVar)
-		self.varY:XCFDefineSetter("SetValue", PushToDataVar)
-		self.varZ:XCFDefineSetter("SetValue", PushToDataVar)
+		self.varX:XCFHijackAfter("SetValue", PushToDataVar)
+		self.varY:XCFHijackAfter("SetValue", PushToDataVar)
+		self.varZ:XCFHijackAfter("SetValue", PushToDataVar)
 
 		-- When the datavar changes, update all sliders.
 		local HookID = "XCF_Bind_" .. tostring(self) .. "_" .. Name .. "_" .. Group
