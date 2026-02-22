@@ -6,7 +6,7 @@ local XCF = XCF
 -- TODO: make data vars indexed by uuid, since name and group are used to avoid naming conflicts but we may want to search by group or name separately.
 
 do -- Macros for defining data variables and their types
-	XCF.DataVarTypes = XCF.DataVarTypes or {} -- Maps type names to type definitions
+	XCF.DataVarTypesByName = XCF.DataVarTypesByName or {} -- Maps name -> type definition
 
 	local TypeCounter = 1
 	function XCF.DefineDataVarType(Name, ReadFunc, WriteFunc, Options)
@@ -18,13 +18,13 @@ do -- Macros for defining data variables and their types
 			Options = Options,
 		}
 		TypeCounter = TypeCounter + 1
-		XCF.DataVarTypes[Name] = NewDataVarType
+		XCF.DataVarTypesByName[Name] = NewDataVarType
 		return NewDataVarType
 	end
 
-	XCF.DataVars = XCF.DataVars or {} -- Maps variable UUIDs to variable definitions
-	XCF.DataVarsByGroupAndName = XCF.DataVarsByGroupAndName or {} -- Maps variable group and name to variable definition for easy lookup
-	XCF.DataVarGroupsOrdered = XCF.DataVarGroupsOrdered or {} -- Maps group to ordered list of variable names for that group, used for menu generation
+	XCF.DataVars = XCF.DataVars or {} -- Maps UUID -> variable definition
+	XCF.DataVarsByGroupAndName = XCF.DataVarsByGroupAndName or {} -- Maps group -> name -> variable definition
+	XCF.DataVarGroupsOrdered = XCF.DataVarGroupsOrdered or {} -- Maps group -> ordered list of variable names (for menu generation)
 
 	--- Defines data variable on the client
 	local VarCounter = 1
@@ -84,6 +84,7 @@ do -- Managing data variable synchronization and networking
 	--- Called from server: Sends to the specific player if specified, or all players if nil
 	--- Called from client: Player argument does nothing
 	function XCF.SetServerData(Name, Group, Value, TargetPlayer)
+		assert(Name and Group and Value, "Name, Group, and Value are required to set a server data variable")
 		local DataVar = XCF.DataVarsByGroupAndName[Group][Name]
 		if DataVar.Values[ServerKey] ~= Value then
 			DataVar.Values[ServerKey] = Value
@@ -277,7 +278,7 @@ do -- Defining default data variables and types
 	----------------------------------------------------------
 
 	-- Test variable
-	XCF.DefineDataVar("TestVar", "TestGroup", XCF.DataVarTypes.String)
+	XCF.DefineDataVar("TestVar", "TestGroup", XCF.DataVarTypesByName.String)
 
-	XCF.DefineDataVar("ServerDataAllowAdmin", "ServerSettings", XCF.DataVarTypes.Bool, false)
+	XCF.DefineDataVar("ServerDataAllowAdmin", "ServerSettings", XCF.DataVarTypesByName.Bool, false)
 end

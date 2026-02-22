@@ -184,16 +184,26 @@ end
 
 -- Similar to ControlPresets derma panel, but for XCF.
 -- Reference: https://github.com/Facepunch/garrysmod/blob/master/garrysmod/gamemodes/sandbox/gamemode/spawnmenu/controls/control_presets.lua
-function PANEL:AddPresetsBar()
-	local Box = self:Add("DPanel")
-	Box:Dock(TOP)
-	Box:SetTall(20)
-	Box:DockMargin(0, 0, 0, 10)
+function PANEL:AddPresetsBar(PresetGroup)
+	local Panel = self:Add("DPanel")
+	Panel:Dock(TOP)
+	Panel:SetTall(20)
+	Panel:DockMargin(0, 0, 0, 10)
 
-	local Dropdown = vgui.Create("DComboBox", Box)
+	local Dropdown = vgui.Create("DComboBox", Panel)
 	Dropdown:Dock(FILL)
+	Dropdown.OnSelect = function(_, _, value, _)
+		XCF.ApplyPreset(value, PresetGroup)
+	end
 
-	local RemoveButton = vgui.Create("DImageButton", Box)
+	function Dropdown:RefreshChoices()
+		Dropdown:Clear()
+		for Name, _ in pairs(XCF.PresetsByGroupAndName[PresetGroup] or {}) do
+			Dropdown:AddChoice(Name)
+		end
+	end
+
+	local RemoveButton = vgui.Create("DImageButton", Panel)
 	RemoveButton:Dock(RIGHT)
 	RemoveButton:SetTooltip("Remove preset")
 	RemoveButton:SetImage("icon16/delete.png")
@@ -202,10 +212,20 @@ function PANEL:AddPresetsBar()
 	RemoveButton:DockMargin(0, 0, 0, 0)
 
 	RemoveButton.DoClick = function()
-		print("remove")
+		local PresetName = Dropdown:GetValue()
+		Derma_Query(
+			"Are you sure you want to remove [" .. PresetName .. "]?", "Removing:",
+			"Yes",
+			function()
+				XCF.RemovePreset(PresetName, PresetGroup)
+				Dropdown:RefreshChoices()
+			end,
+			"No",
+			function() end
+		)
 	end
 
-	local SaveButton = vgui.Create("DImageButton", Box)
+	local SaveButton = vgui.Create("DImageButton", Panel)
 	SaveButton:Dock(RIGHT)
 	SaveButton:SetTooltip("Save preset")
 	SaveButton:SetImage("icon16/add.png")
@@ -214,12 +234,29 @@ function PANEL:AddPresetsBar()
 	SaveButton:DockMargin(2, 0, 0, 0)
 
 	SaveButton.DoClick = function()
-		print("save")
+		Derma_StringRequest("#preset.saveas_title", "#preset.saveas_desc", "", function( text )
+			if (not text or text:Trim() == "") then presets.BadNameAlert() return end
+			if XCF.PresetsByGroupAndName[PresetGroup] and XCF.PresetsByGroupAndName[PresetGroup][text] then
+				Derma_Query(
+					"Are you sure you want to replace [" .. text .. "]?", "Saving:",
+					"Yes",
+					function() end,
+					"No",
+					function() end
+				)
+			end
+
+			XCF.AddPreset(text, PresetGroup, PresetGroup)
+			-- XCF.SavePreset(text, PresetGroup)
+			Dropdown:RefreshChoices()
+		end)
 	end
+
+	return Panel
 end
 
 -- TODO: Add more options etc.
-function PANEL:AddModelPreview(Model, _)
+function PANEL:AddModelPreview(Model)
 	local ModelPanel    = self:AddPanel("DModelPanel")
 
 	function ModelPanel:UpdateModel(Model)

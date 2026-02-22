@@ -12,7 +12,7 @@ local function CreateFateCubeMenu(MenuPanel)
 	end
 
 	local Base = MenuPanel:AddCollapsible("Settings")
-	Base:AddPresetsBar()
+	Base:AddPresetsBar("FateCube")
 	Base:AddModelPreview("models/hunter/blocks/cube075x075x075.mdl"):XCFDebug("Model")
 	XCF.CreatePanelsFromDataVars(Base, "FateCube")
 end
