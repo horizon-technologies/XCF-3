@@ -1,6 +1,6 @@
 local XCF = XCF
 
--- TODO: Maybe consider using group as a scope to avoid name conflicts?
+-- TODO: Maybe consider using scope as a scope to avoid name conflicts?
 -- TODO: determine if there are looping issues with the menu
 
 do -- Macros for defining data variables and their types
@@ -21,17 +21,17 @@ do -- Macros for defining data variables and their types
 	end
 
 	XCF.DataVars = XCF.DataVars or {} -- Maps UUID -> variable definition
-	XCF.DataVarsByGroupAndName = XCF.DataVarsByGroupAndName or {} -- Maps group -> name -> variable definition
-	XCF.DataVarGroupsOrdered = XCF.DataVarGroupsOrdered or {} -- Maps group -> ordered list of variable names (for menu generation)
+	XCF.DataVarsByScopeAndName = XCF.DataVarsByScopeAndName or {} -- Maps scope -> name -> variable definition
+	XCF.DataVarScopesOrdered = XCF.DataVarScopesOrdered or {} -- Maps scope -> ordered list of variable names (for menu generation)
 
 	--- Defines data variable on the client
 	local VarCounter = 1
-	function XCF.DefineDataVar(Name, Group, Type, Default, Options)
-		local ExistingDataVar = XCF.DataVarsByGroupAndName[Group] and XCF.DataVarsByGroupAndName[Group][Name]
+	function XCF.DefineDataVar(Name, Scope, Type, Default, Options)
+		local ExistingDataVar = XCF.DataVarsByScopeAndName[Scope] and XCF.DataVarsByScopeAndName[Scope][Name]
 
 		local NewDataVar = {
 			Name = Name,
-			Group = Group,
+			Scope = Scope,
 			UUID = VarCounter,
 			Type = Type,
 			Default = Default,
@@ -41,15 +41,15 @@ do -- Macros for defining data variables and their types
 
 		-- Only change UUID / Order if this is a new variable.
 		if not ExistingDataVar then
-			-- Add to ordered list of groups
-			XCF.DataVarGroupsOrdered[Group] = XCF.DataVarGroupsOrdered[Group] or {}
-			table.insert(XCF.DataVarGroupsOrdered[Group], Name)
+			-- Add to ordered list of scopes
+			XCF.DataVarScopesOrdered[Scope] = XCF.DataVarScopesOrdered[Scope] or {}
+			table.insert(XCF.DataVarScopesOrdered[Scope], Name)
 			XCF.DataVars[VarCounter] = NewDataVar
 			VarCounter = VarCounter + 1
 		end
 
-		XCF.DataVarsByGroupAndName[Group] = XCF.DataVarsByGroupAndName[Group] or {}
-		XCF.DataVarsByGroupAndName[Group][Name] = NewDataVar
+		XCF.DataVarsByScopeAndName[Scope] = XCF.DataVarsByScopeAndName[Scope] or {}
+		XCF.DataVarsByScopeAndName[Scope][Name] = NewDataVar
 
 		return NewDataVar
 	end
@@ -78,14 +78,14 @@ do -- Managing data variable synchronization and networking
 			net.SendToServer()
 		end
 		-- print("Sent data var", XCF.DataVarIDsToNames[DataVar.UUID], "with value", Value)
-		hook.Run("XCF_OnDataVarChanged", DataVar.Name, DataVar.Group, Value) -- Notify our realm before we send
+		hook.Run("XCF_OnDataVarChanged", DataVar.Name, DataVar.Scope, Value) -- Notify our realm before we send
 	end
 
 	--- Synchronizes server data with the other realm
 	--- Called from server: Sends to the specific player if specified, or all players if nil
 	--- Called from client: Player argument does nothing
-	function XCF.SetServerData(Name, Group, Value, TargetPlayer)
-		local DataVar = XCF.DataVarsByGroupAndName[Group][Name]
+	function XCF.SetServerData(Name, Scope, Value, TargetPlayer)
+		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
 		if DataVar.Values[ServerKey] ~= Value then
 			DataVar.Values[ServerKey] = Value
 			if SERVER then SendDataVar(DataVar, Value, true, TargetPlayer)
@@ -96,8 +96,8 @@ do -- Managing data variable synchronization and networking
 	--- Synchronizes client data with the other realm
 	--- Called from server: Sends to the specific player if specified, or all players if nil
 	--- Called from client: Player argument does nothing
-	function XCF.SetClientData(Name, Group, Value, TargetPlayer)
-		local DataVar = XCF.DataVarsByGroupAndName[Group][Name]
+	function XCF.SetClientData(Name, Scope, Value, TargetPlayer)
+		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
 
 		-- Called from client: use local player
 		-- Called from server: use player argument or all players if nil
@@ -135,7 +135,7 @@ do -- Managing data variable synchronization and networking
 			if SyncServerRealm then DataVar.Values[ServerKey] = Value
 			else DataVar.Values[LocalPlayer()] = Value end
 		end
-		hook.Run("XCF_OnDataVarChanged", DataVar.Name, DataVar.Group, Value) -- Notify any listeners that the variable has changed
+		hook.Run("XCF_OnDataVarChanged", DataVar.Name, DataVar.Scope, Value) -- Notify any listeners that the variable has changed
 	end)
 
 	if SERVER then
@@ -169,9 +169,9 @@ do -- Managing data variable synchronization and networking
 
 	--- Returns the value of a client data variable for a specific player (or local player if on client)
 	--- If not set, returns the default value for the variable from its definition
-	function XCF.GetClientData(Name, Group, Player, IgnoreDefaults)
+	function XCF.GetClientData(Name, Scope, Player, IgnoreDefaults)
 		if CLIENT then Player = LocalPlayer() end
-		local DataVar = XCF.DataVarsByGroupAndName[Group][Name]
+		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
 		if not DataVar then return end
 		if not IgnoreDefaults and DataVar.Values[Player] == nil then return DataVar.Default end
 		return DataVar.Values[Player]
@@ -179,39 +179,39 @@ do -- Managing data variable synchronization and networking
 
 	--- Returns the value of a server data variable
 	--- If not set, returns the default value for the variable from its definition
-	function XCF.GetServerData(Name, Group, _, IgnoreDefaults)
-		local DataVar = XCF.DataVarsByGroupAndName[Group][Name]
+	function XCF.GetServerData(Name, Scope, _, IgnoreDefaults)
+		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
 		if not DataVar then return end
 		if not IgnoreDefaults and DataVar.Values[ServerKey] == nil then return DataVar.Default end
 		return DataVar.Values[ServerKey]
 	end
 
 	--- Calls GetClientData or GetServerData based on the realm
-	function XCF.GetRealmData(Name, Group, IgnoreDefaults)
-		if SERVER then return XCF.GetServerData(Name, Group, nil, IgnoreDefaults)
-		else return XCF.GetClientData(Name, Group, nil, IgnoreDefaults) end
+	function XCF.GetRealmData(Name, Scope, IgnoreDefaults)
+		if SERVER then return XCF.GetServerData(Name, Scope, nil, IgnoreDefaults)
+		else return XCF.GetClientData(Name, Scope, nil, IgnoreDefaults) end
 	end
 
 	--- Calls SetClientData or SetServerData based on the realm
-	function XCF.SetRealmData(Name, Group, Value)
-		if SERVER then XCF.SetServerData(Name, Group, Value)
-		else XCF.SetClientData(Name, Group, Value) end
+	function XCF.SetRealmData(Name, Scope, Value)
+		if SERVER then XCF.SetServerData(Name, Scope, Value)
+		else XCF.SetClientData(Name, Scope, Value) end
 	end
 
 	function XCF.GetAllRealmData(IgnoreDefaults)
 		local Result = {}
-		for Group, _ in pairs(XCF.DataVarsByGroupAndName) do
-			for Name, _ in pairs(XCF.DataVarsByGroupAndName[Group] or {}) do
-				Result[Name] = XCF.GetRealmData(Name, Group, IgnoreDefaults)
+		for Scope, _ in pairs(XCF.DataVarsByScopeAndName) do
+			for Name, _ in pairs(XCF.DataVarsByScopeAndName[Scope] or {}) do
+				Result[Name] = XCF.GetRealmData(Name, Scope, IgnoreDefaults)
 			end
 		end
 		return Result
 	end
 
 	function XCF.SetAllRealmData(Data)
-		for Group, _ in pairs(XCF.DataVarsByGroupAndName) do
-			for Name, _ in pairs(XCF.DataVarsByGroupAndName[Group] or {}) do
-				if Data[Name] ~= nil then XCF.SetRealmData(Name, Group, Data[Name]) end
+		for Scope, _ in pairs(XCF.DataVarsByScopeAndName) do
+			for Name, _ in pairs(XCF.DataVarsByScopeAndName[Scope] or {}) do
+				if Data[Name] ~= nil then XCF.SetRealmData(Name, Scope, Data[Name]) end
 			end
 		end
 	end
@@ -224,10 +224,10 @@ do -- Automatic Menu Generation
 		return Panel
 	end
 
-	function XCF.CreatePanelsFromDataVars(Menu, Group)
+	function XCF.CreatePanelsFromDataVars(Menu, Scope)
 		local Panels = {}
-		for _, Name in ipairs(XCF.DataVarGroupsOrdered[Group] or {}) do
-			local DataVar = XCF.DataVarsByGroupAndName[Group][Name]
+		for _, Name in ipairs(XCF.DataVarScopesOrdered[Scope] or {}) do
+			local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
 			if DataVar then
 				Panels[Name] = XCF.CreatePanelFromDataVar(Menu, DataVar)
 			end
@@ -238,20 +238,20 @@ end
 
 do -- Defining default data variables and types
 	local CreateSliderMenu = function(Menu, DataVar)
-		return Menu:AddSlider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name, DataVar.Group)
+		return Menu:AddSlider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name, DataVar.Scope)
 	end
 
 	local CreateWangMenu = function(Menu, DataVar)
-		return Menu:AddNumberWang(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name, DataVar.Group)
+		return Menu:AddNumberWang(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name, DataVar.Scope)
 	end
 
 	-- Basic types
 	XCF.DefineDataVarType("Bool", net.ReadBool, net.WriteBool, {
-		CreatePanel = function(Menu, DataVar) return Menu:AddCheckbox(DataVar.Name):BindToDataVar(DataVar.Name, DataVar.Group) end,
+		CreatePanel = function(Menu, DataVar) return Menu:AddCheckbox(DataVar.Name):BindToDataVar(DataVar.Name, DataVar.Scope) end,
 	})
 
 	XCF.DefineDataVarType("String", net.ReadString, net.WriteString, {
-		CreatePanel = function(Menu, DataVar) return Menu:AddTextEntry(DataVar.Name):BindToDataVar(DataVar.Name, DataVar.Group) end,
+		CreatePanel = function(Menu, DataVar) return Menu:AddTextEntry(DataVar.Name):BindToDataVar(DataVar.Name, DataVar.Scope) end,
 	})
 
 	XCF.DefineDataVarType("Float", net.ReadFloat, net.WriteFloat, {
@@ -266,7 +266,7 @@ do -- Defining default data variables and types
 	XCF.DefineDataVarType("Angle", net.ReadAngle, net.WriteAngle, {})
 
 	XCF.DefineDataVarType("Vector", net.ReadVector, net.WriteVector, {
-		CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name, DataVar.Group) end,
+		CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2):BindToDataVar(DataVar.Name, DataVar.Scope) end,
 	})
 
 	XCF.DefineDataVarType("Normal", net.ReadNormal, net.WriteNormal, {})
@@ -293,7 +293,7 @@ do -- Defining default data variables and types
 	----------------------------------------------------------
 
 	-- Test variable
-	XCF.DefineDataVar("TestVar", "TestGroup", XCF.DataVarTypesByName.String)
+	XCF.DefineDataVar("TestVar", "TestScope", XCF.DataVarTypesByName.String)
 
 	XCF.DefineDataVar("ServerDataAllowAdmin", "ServerSettings", XCF.DataVarTypesByName.Bool, false)
 

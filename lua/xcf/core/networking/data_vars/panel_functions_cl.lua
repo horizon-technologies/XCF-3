@@ -50,7 +50,7 @@ end
 --- @param setterName string The name of the panel's setter function (see XCFDefineSetter)
 --- @param getterName string The name of the panel's getter function
 --- @param changeName string The name of the panel's OnVAlueChanged-like function to detour (see XCFDefineOnChanged)
-function PanelMeta:BindToDataVarAdv(Name, Group, setterName, getterName, changeName)
+function PanelMeta:BindToDataVarAdv(Name, Scope, setterName, getterName, changeName)
 	local suppress = false -- Need to prevent infinite loops when both panel and DataVar update each other
 
 	local function SetValue(value)
@@ -63,23 +63,23 @@ function PanelMeta:BindToDataVarAdv(Name, Group, setterName, getterName, changeN
 	local function PushToDataVar(pnl)
 		if suppress then return end
 		local value = pnl[getterName](pnl)
-		XCF.SetClientData(Name, Group, value)
+		XCF.SetClientData(Name, Scope, value)
 	end
 
 	self:XCFHijackAfter(changeName, PushToDataVar)
 	self:XCFHijackAfter(setterName, PushToDataVar)
 
 	-- DataVar -> Panel (network updates)
-	local HookID = "XCF_Bind_" .. tostring(self) .. "_" .. Name .. "_" .. Group
-	hook.Add("XCF_OnDataVarChanged", HookID, function(name, group, value)
-		if name ~= Name or group ~= Group then return end
+	local HookID = "XCF_Bind_" .. tostring(self) .. "_" .. Name .. "_" .. Scope
+	hook.Add("XCF_OnDataVarChanged", HookID, function(name, scope, value)
+		if name ~= Name or scope ~= Scope then return end
 		if not IsValid(self) then hook.Remove("XCF_OnDataVarChanged", HookID) return end
 
 		SetValue(value)
 	end)
 
 	-- Initialize with current / default value (unset values remain unset)
-	local initial = CLIENT and XCF.GetClientData(Name, Group) or XCF.GetServerData(Name, Group)
+	local initial = CLIENT and XCF.GetClientData(Name, Scope) or XCF.GetServerData(Name, Scope)
 	if initial ~= nil then
 		SetValue(initial)
 	end

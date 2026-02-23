@@ -1,46 +1,46 @@
 -- TODO: Cleanup how data is loaded in from preset filse
 
-XCF.PresetsByGroupAndName = XCF.PresetsByGroupAndName or {} -- Maps Group -> Name -> Preset
+XCF.PresetsByScopeAndName = XCF.PresetsByScopeAndName or {} -- Maps Scope -> Name -> Preset
 
 local BasePath = "xcf/presets/" -- Base path preset folders/files are located at
 
 --- Creates a preset with the given information
---- @param PresetName string The name of the preset. Must be unique within the PresetGroup.
---- @param PresetGroup string The group of the preset. Presets are organized by group, and presets in the same group share the same set of data variables.
---- @param DataVarGroup string The data variable group that this preset is associated with.
+--- @param PresetName string The name of the preset. Must be unique within the PresetScope.
+--- @param PresetScope string The scope of the preset. Presets are organized by scope, and presets in the same scope share the same set of data variables.
+--- @param DataVarScope string The data variable scope that this preset is associated with.
 --- @param SaveUnset boolean Whether to save unset data variables using their default. Not specifying allows you to only apply changes to what you want.
-function XCF.AddPreset(PresetName, PresetGroup, DataVarGroup, Data, SaveUnset)
+function XCF.AddPreset(PresetName, PresetScope, DataVarScope, Data, SaveUnset)
 	local NewPreset = {
 		Name = PresetName,
-		PresetGroup = PresetGroup,
-		DataVarGroup = DataVarGroup,
+		PresetScope = PresetScope,
+		DataVarScope = DataVarScope,
 		Data = Data or {},
 	}
 
 	if not Data then
-		for VarName, _ in pairs(XCF.DataVarsByGroupAndName[DataVarGroup] or {}) do
-			local Value = XCF.GetRealmData(VarName, DataVarGroup, not SaveUnset)
+		for VarName, _ in pairs(XCF.DataVarsByScopeAndName[DataVarScope] or {}) do
+			local Value = XCF.GetRealmData(VarName, DataVarScope, not SaveUnset)
 			if Value ~= nil then
-				NewPreset.Data[DataVarGroup] = NewPreset.Data[DataVarGroup] or {}
-				NewPreset.Data[DataVarGroup][VarName] = Value
+				NewPreset.Data[DataVarScope] = NewPreset.Data[DataVarScope] or {}
+				NewPreset.Data[DataVarScope][VarName] = Value
 			end
 		end
 	end
 
-	XCF.PresetsByGroupAndName[PresetGroup] = XCF.PresetsByGroupAndName[PresetGroup] or {}
-	XCF.PresetsByGroupAndName[PresetGroup][PresetName] = NewPreset
+	XCF.PresetsByScopeAndName[PresetScope] = XCF.PresetsByScopeAndName[PresetScope] or {}
+	XCF.PresetsByScopeAndName[PresetScope][PresetName] = NewPreset
 
 	return NewPreset
 end
 
---- Removes a preset by name and group. Also deletes the preset file from disk if it exists.
-function XCF.RemovePreset(Name, Group)
-	if XCF.PresetsByGroupAndName[Group][Name] then
-		local Path = BasePath .. "/" .. Group .. "/" .. Name .. ".txt"
+--- Removes a preset by name and scope. Also deletes the preset file from disk if it exists.
+function XCF.RemovePreset(Name, Scope)
+	if XCF.PresetsByScopeAndName[Scope][Name] then
+		local Path = BasePath .. "/" .. Scope .. "/" .. Name .. ".txt"
 		if file.Exists(Path, "DATA") then file.Delete(Path) end
 
-		XCF.PresetsByGroupAndName[Group][Name] = nil
-		if table.IsEmpty(XCF.PresetsByGroupAndName[Group]) then XCF.PresetsByGroupAndName[Group] = nil end
+		XCF.PresetsByScopeAndName[Scope][Name] = nil
+		if table.IsEmpty(XCF.PresetsByScopeAndName[Scope]) then XCF.PresetsByScopeAndName[Scope] = nil end
 		return true
 	end
 
@@ -48,53 +48,53 @@ function XCF.RemovePreset(Name, Group)
 end
 
 --- Sets all the data variables to values listed in the preset.
-function XCF.ApplyPreset(Name, Group)
-	local Preset = XCF.PresetsByGroupAndName[Group][Name]
+function XCF.ApplyPreset(Name, Scope)
+	local Preset = XCF.PresetsByScopeAndName[Scope][Name]
 	if not Preset then return end
 
 	PrintTable(Preset)
-	for VarGroup, GroupTable in pairs(Preset.Data) do
-		for VarName, Value in pairs(GroupTable) do
+	for VarScope, ScopeTable in pairs(Preset.Data) do
+		for VarName, Value in pairs(ScopeTable) do
 
-			XCF.SetRealmData(VarName, VarGroup, Value)
+			XCF.SetRealmData(VarName, VarScope, Value)
 		end
 	end
 end
 
 --- Saves a preset to disk. Presets are stored in garrysmod/data/xcf/presets/.
 --- Used by the preset menu when saving a preset
-function XCF.SavePreset(Name, Group)
-	local Preset = XCF.PresetsByGroupAndName[Group][Name]
+function XCF.SavePreset(Name, Scope)
+	local Preset = XCF.PresetsByScopeAndName[Scope][Name]
 	if not Preset then return end
 
-	local SubPath = BasePath .. "/" .. Group .. "/"
+	local SubPath = BasePath .. "/" .. Scope .. "/"
 	if not file.Exists(SubPath, "DATA") then file.CreateDir(SubPath) end
 
 	local FullPath = SubPath .. Name .. ".txt"
 
 	local SaveData = {
 		Name = Preset.Name,
-		PresetGroup = Preset.PresetGroup,
-		DataVarGroup = Preset.DataVarGroup,
+		PresetScope = Preset.PresetScope,
+		DataVarScope = Preset.DataVarScope,
 		Data = Preset.Data
 	}
 
 	file.Write(FullPath, util.TableToJSON(SaveData, true))
 end
 
---- Loads all presets for a specific group from disk.
+--- Loads all presets for a specific scope from disk.
 --- Used by the preset menu to populate the list of presets.
-function XCF.LoadPresetsForGroup(Group)
-	local GroupPath = BasePath .. Group .. "/"
-	if not file.Exists(GroupPath, "DATA") then return end
+function XCF.LoadPresetsForScope(Scope)
+	local ScopePath = BasePath .. Scope .. "/"
+	if not file.Exists(ScopePath, "DATA") then return end
 
-	local Files = file.Find(GroupPath .. "*.txt", "DATA")
+	local Files = file.Find(ScopePath .. "*.txt", "DATA")
 
 	for _, FileName in ipairs(Files) do
-		local JSON = file.Read(GroupPath .. FileName, "DATA")
+		local JSON = file.Read(ScopePath .. FileName, "DATA")
 		local Loaded = util.JSONToTable(JSON)
-		if Loaded and Loaded.Name and Loaded.PresetGroup then
-			XCF.AddPreset(Loaded.Name, Loaded.PresetGroup, Loaded.DataVarGroup, Loaded.Data)
+		if Loaded and Loaded.Name and Loaded.PresetScope then
+			XCF.AddPreset(Loaded.Name, Loaded.PresetScope, Loaded.DataVarScope, Loaded.Data)
 		end
 	end
 end

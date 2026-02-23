@@ -93,8 +93,8 @@ function PANEL:AddCheckbox(Text)
 	Panel:SetFont("XCF_Control")
 	Panel:SetDark(true)
 
-	function Panel:BindToDataVar(Name, Group)
-		self:BindToDataVarAdv(Name, Group, "SetChecked", "GetChecked", "OnChange")
+	function Panel:BindToDataVar(Name, Scope)
+		self:BindToDataVarAdv(Name, Scope, "SetChecked", "GetChecked", "OnChange")
 	end
 
 	return Panel
@@ -112,8 +112,8 @@ function PANEL:AddSlider(Title, Min, Max, Decimals)
 
 	Panel.Label:SetFont("XCF_Control")
 
-	function Panel:BindToDataVar(Name, Group)
-		self:BindToDataVarAdv(Name, Group, "SetValue", "GetValue", "OnValueChanged")
+	function Panel:BindToDataVar(Name, Scope)
+		self:BindToDataVarAdv(Name, Scope, "SetValue", "GetValue", "OnValueChanged")
 	end
 
 	return Panel
@@ -134,8 +134,8 @@ function PANEL:AddNumberWang(Label, Min, Max, Decimals)
 	Text:SetDark(true)
 	Text:Dock(TOP)
 
-	function Wang:BindToDataVar(Name, Group)
-		Wang:BindToDataVarAdv(Name, Group, "SetValue", "GetValue", "OnValueChanged")
+	function Wang:BindToDataVar(Name, Scope)
+		Wang:BindToDataVarAdv(Name, Scope, "SetValue", "GetValue", "OnValueChanged")
 	end
 
 	return Wang, Text
@@ -175,8 +175,8 @@ function PANEL:AddTextEntry(LabelText)
 
 	Label:Dock(LEFT)
 
-	function Entry:BindToDataVar(Name, Group)
-		self:BindToDataVarAdv(Name, Group, "SetText", "GetText", "OnTextChanged")
+	function Entry:BindToDataVar(Name, Scope)
+		self:BindToDataVarAdv(Name, Scope, "SetText", "GetText", "OnTextChanged")
 	end
 
 	return Entry, Base, Label
@@ -184,7 +184,7 @@ end
 
 -- Similar to ControlPresets derma panel, but for XCF.
 -- Reference: https://github.com/Facepunch/garrysmod/blob/master/garrysmod/gamemodes/sandbox/gamemode/spawnmenu/controls/control_presets.lua
-function PANEL:AddPresetsBar(PresetGroup)
+function PANEL:AddPresetsBar(PresetScope)
 	local Panel = self:Add("DPanel")
 	Panel:Dock(TOP)
 	Panel:SetTall(20)
@@ -194,13 +194,13 @@ function PANEL:AddPresetsBar(PresetGroup)
 	Dropdown:Dock(FILL)
 	Dropdown:SetTooltip("Select a preset to apply")
 	Dropdown.OnSelect = function(_, _, value, _)
-		XCF.ApplyPreset(value, PresetGroup)
+		XCF.ApplyPreset(value, PresetScope)
 	end
 
 	function Dropdown:RefreshChoices(text)
-		XCF.LoadPresetsForGroup(PresetGroup)
+		XCF.LoadPresetsForScope(PresetScope)
 		Dropdown:Clear()
-		for Name, _ in pairs(XCF.PresetsByGroupAndName[PresetGroup] or {}) do
+		for Name, _ in pairs(XCF.PresetsByScopeAndName[PresetScope] or {}) do
 			Dropdown:AddChoice(Name)
 		end
 		-- if text then Dropdown:ChooseOption(text) end
@@ -220,7 +220,7 @@ function PANEL:AddPresetsBar(PresetGroup)
 			"Are you sure you want to remove [" .. PresetName .. "]?", "Removing:",
 			"Yes",
 			function()
-				XCF.RemovePreset(PresetName, PresetGroup)
+				XCF.RemovePreset(PresetName, PresetScope)
 				Dropdown:RefreshChoices()
 			end,
 			"No",
@@ -239,7 +239,7 @@ function PANEL:AddPresetsBar(PresetGroup)
 	SaveButton.DoClick = function()
 		Derma_StringRequest("#preset.saveas_title", "#preset.saveas_desc", "", function( text )
 			if (not text or text:Trim() == "") then presets.BadNameAlert() return end
-			if XCF.PresetsByGroupAndName[PresetGroup] and XCF.PresetsByGroupAndName[PresetGroup][text] then
+			if XCF.PresetsByScopeAndName[PresetScope] and XCF.PresetsByScopeAndName[PresetScope][text] then
 				Derma_Query(
 					"Are you sure you want to replace [" .. text .. "]?", "Saving:",
 					"Yes",
@@ -249,8 +249,8 @@ function PANEL:AddPresetsBar(PresetGroup)
 				)
 			end
 
-			XCF.AddPreset(text, PresetGroup, PresetGroup)
-			XCF.SavePreset(text, PresetGroup)
+			XCF.AddPreset(text, PresetScope, PresetScope)
+			XCF.SavePreset(text, PresetScope)
 			Dropdown:RefreshChoices(text)
 		end)
 	end
@@ -300,7 +300,7 @@ function PANEL:AddVec3Slider(Title, Min, Max, Decimals)
 	-- TODO: Refactor this and other panel binds to reduce code duplication?
 
 	-- Binds three sliders to a vector DataVar
-	function Base:BindToDataVar(Name, Group)
+	function Base:BindToDataVar(Name, Scope)
 		local suppress = false
 
 		local function GetValue()
@@ -317,7 +317,7 @@ function PANEL:AddVec3Slider(Title, Min, Max, Decimals)
 
 		local function PushToDataVar()
 			if suppress then return end
-			XCF.SetClientData(Name, Group, GetValue())
+			XCF.SetClientData(Name, Scope, GetValue())
 		end
 
 		-- When any one slider changes, push the new vector to the DataVar
@@ -330,16 +330,16 @@ function PANEL:AddVec3Slider(Title, Min, Max, Decimals)
 		self.varZ:XCFHijackAfter("SetValue", PushToDataVar)
 
 		-- When the datavar changes, update all sliders.
-		local HookID = "XCF_Bind_" .. tostring(self) .. "_" .. Name .. "_" .. Group
-		hook.Add("XCF_OnDataVarChanged", HookID, function(changedKey, changedGroup, value)
-			if changedKey ~= Name or changedGroup ~= Group then return end
+		local HookID = "XCF_Bind_" .. tostring(self) .. "_" .. Name .. "_" .. Scope
+		hook.Add("XCF_OnDataVarChanged", HookID, function(changedKey, changedScope, value)
+			if changedKey ~= Name or changedScope ~= Scope then return end
 			if not IsValid(self) then hook.Remove("XCF_OnDataVarChanged", HookID) return end
 
 			SetValue(value)
 		end)
 
 		-- Initialize with current/default value
-		local initial = CLIENT and XCF.GetClientData(Name, Group) or XCF.GetServerData(Name, Group)
+		local initial = CLIENT and XCF.GetClientData(Name, Scope) or XCF.GetServerData(Name, Scope)
 		if initial then
 			SetValue(initial)
 		end
