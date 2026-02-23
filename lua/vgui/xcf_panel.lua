@@ -322,13 +322,13 @@ function PANEL:AddVec3Slider(Title, Min, Max, Decimals)
 		end
 
 		-- When any one slider changes, push the new vector to the DataVar
-		self.varX:XCFHijackAfter("OnValueChanged", PushToDataVar)
-		self.varY:XCFHijackAfter("OnValueChanged", PushToDataVar)
-		self.varZ:XCFHijackAfter("OnValueChanged", PushToDataVar)
+		self.varX:HijackAfter("OnValueChanged", PushToDataVar)
+		self.varY:HijackAfter("OnValueChanged", PushToDataVar)
+		self.varZ:HijackAfter("OnValueChanged", PushToDataVar)
 
-		self.varX:XCFHijackAfter("SetValue", PushToDataVar)
-		self.varY:XCFHijackAfter("SetValue", PushToDataVar)
-		self.varZ:XCFHijackAfter("SetValue", PushToDataVar)
+		self.varX:HijackAfter("SetValue", PushToDataVar)
+		self.varY:HijackAfter("SetValue", PushToDataVar)
+		self.varZ:HijackAfter("SetValue", PushToDataVar)
 
 		-- When the datavar changes, update all sliders.
 		local HookID = "XCF_Bind_" .. tostring(self) .. "_" .. Name .. "_" .. Scope
