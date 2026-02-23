@@ -1,8 +1,5 @@
 local XCF = XCF
 
--- TODO: Maybe consider using scope as a scope to avoid name conflicts?
--- TODO: determine if there are looping issues with the menu
-
 do -- Macros for defining data variables and their types
 	XCF.DataVarTypesByName = XCF.DataVarTypesByName or {} -- Maps name -> type definition
 
@@ -198,20 +195,25 @@ do -- Managing data variable synchronization and networking
 		else XCF.SetClientData(Name, Scope, Value) end
 	end
 
-	function XCF.GetAllRealmData(IgnoreDefaults)
+	--- Gets a mapping from scope -> name -> value for all data variables in the specified scope(s).
+	--- If no scope is specified, gets for all scopes.
+	function XCF.GetAllRealmData(Scope, IgnoreDefaults)
 		local Result = {}
-		for Scope, _ in pairs(XCF.DataVarsByScopeAndName) do
-			for Name, _ in pairs(XCF.DataVarsByScopeAndName[Scope] or {}) do
-				Result[Name] = XCF.GetRealmData(Name, Scope, IgnoreDefaults)
+		for scope, _ in pairs(XCF.DataVarsByScopeAndName) do
+			if Scope and scope ~= Scope then continue end
+			for name, _ in pairs(XCF.DataVarsByScopeAndName[scope] or {}) do
+				Result[scope] = Result[scope] or {}
+				Result[scope][name] = XCF.GetRealmData(name, scope, IgnoreDefaults)
 			end
 		end
 		return Result
 	end
 
+	--- Given a mapping of scope -> name -> value, sets all the data variables to those values.
 	function XCF.SetAllRealmData(Data)
-		for Scope, _ in pairs(XCF.DataVarsByScopeAndName) do
-			for Name, _ in pairs(XCF.DataVarsByScopeAndName[Scope] or {}) do
-				if Data[Name] ~= nil then XCF.SetRealmData(Name, Scope, Data[Name]) end
+		for scope, _ in pairs(XCF.DataVarsByScopeAndName) do
+			for name, _ in pairs(XCF.DataVarsByScopeAndName[scope] or {}) do
+				if Data[scope] and Data[scope][name] ~= nil then XCF.SetRealmData(name, scope, Data[scope][name]) end
 			end
 		end
 	end
