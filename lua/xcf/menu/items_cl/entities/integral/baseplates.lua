@@ -1,5 +1,5 @@
 local function CreateMenu(MenuPanel)
-	XCF.SetClientData("SpawnClass", "ToolGun", "xcf_testent")
+	XCF.SetDataVar("SpawnClass", "ToolGun", "xcf_baseplate", LocalPlayer())
 
 	MenuPanel:AddLabel("Cube that changes state randomly when its wire input is triggered.\nInteracts with linked boxes.")
 

@@ -257,7 +257,7 @@ function PANEL:AddPresetsBar(PresetScope)
 				)
 			end
 
-			local Data = XCF.GetAllRealmData(PresetScope)
+			local Data = XCF.GetDataVars(PresetScope)
 			XCF.AddPreset(text, PresetScope, PresetScope, Data)
 			XCF.SavePreset(text, PresetScope)
 			Dropdown:RefreshChoices(text)
@@ -325,7 +325,7 @@ function PANEL:AddVec3Slider(Title, Min, Max, Decimals)
 
 		local function PushToDataVar()
 			if suppress then return end
-			XCF.SetClientData(Name, Scope, GetValue())
+			XCF.SetDataVar(Name, Scope, GetValue())
 		end
 
 		-- When any one slider changes, push the new vector to the DataVar
@@ -343,7 +343,7 @@ function PANEL:AddVec3Slider(Title, Min, Max, Decimals)
 		end)
 
 		-- Initialize with current/default value
-		local initial = CLIENT and XCF.GetClientData(Name, Scope) or XCF.GetServerData(Name, Scope)
+		local initial = XCF.GetDataVar(Name, Scope)
 		if initial then
 			SetValue(initial)
 		end

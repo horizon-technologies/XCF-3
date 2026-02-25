@@ -13,17 +13,20 @@ function TOOL:LeftClick(Trace)
 	if Trace.HitSky then return false end
 
 	local Player = self:GetOwner()
-	local SpawnClass = XCF.GetClientData("SpawnClass", "ToolGun", self:GetOwner())
+	local SpawnClass = XCF.GetDataVar("SpawnClass", "ToolGun", Player)
 	if not SpawnClass or SpawnClass == "" then return false end
 
-	-- local Entity = Trace.Entity
-	-- local Position = Trace.HitPos + Trace.HitNormal * 128
-	-- local Angles   = Trace.HitNormal:Angle():Up():Angle()
-	-- local Success, Result = Entities.Spawn(Class, Player, Position, Angles, Data)
+	local Entity = Trace.Entity
+
+	local Position = Trace.HitPos + Trace.HitNormal * 128
+	local Angles   = Trace.HitNormal:Angle():Up():Angle()
+	local Success, Result = XCF.SpawnEntity(SpawnClass, Player, Position, Angles, DataVarKVs)
 
 	if Success then
 		local PhysObj = Result:GetPhysicsObject()
-		print("Spawned entity:", Result)
+		if Result.XCF_PostMenuSpawn then
+			Result:XCF_PostMenuSpawn(SpawnClass, Player, Position, Angles, DataVarKVs)
+		end
 
 		Result:SetSpawnEffect(true)
 
@@ -31,7 +34,7 @@ function TOOL:LeftClick(Trace)
 			PhysObj:EnableMotion(false)
 		end
 	else
-		print(Player, "Error", "Couldn't create entity")
+		print(Player, "Error", "Couldn't create entity" .. Result)
 	end
 
 	return true

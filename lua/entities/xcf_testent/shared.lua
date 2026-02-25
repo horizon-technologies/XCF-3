@@ -3,7 +3,6 @@ DEFINE_BASECLASS("xcf_base_scaleable")
 
 ENT.PrintName      = "XCF scalable test entity"
 ENT.WireDebugName  = "XCF scalable test entity"
-ENT.Spawnable = true
 
 XCF.DefineDataVar("Volatility", "FateCube", "Float", 0, {Min = 0, Max = 1})
 XCF.DefineDataVar("State", "FateCube", "UInt8", 0, {Min = 0, Max = 10})

@@ -61,7 +61,7 @@ function PanelMeta:BindToDataVarAdv(Name, Scope, setterName, getterName, changeN
 	local function PushToDataVar(pnl)
 		if suppress then return end
 		local value = pnl[getterName](pnl)
-		XCF.SetClientData(Name, Scope, value)
+		XCF.SetDataVar(Name, Scope, value)
 	end
 
 	self:HijackAfter(changeName, PushToDataVar)
@@ -73,7 +73,7 @@ function PanelMeta:BindToDataVarAdv(Name, Scope, setterName, getterName, changeN
 	end)
 
 	-- Initialize with current / default value (unset values remain unset)
-	local initial = CLIENT and XCF.GetClientData(Name, Scope) or XCF.GetServerData(Name, Scope)
+	local initial = CLIENT and XCF.GetDataVar(Name, Scope)
 	if initial ~= nil then
 		SetValue(initial)
 	end

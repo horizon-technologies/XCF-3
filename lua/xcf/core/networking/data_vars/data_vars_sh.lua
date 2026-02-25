@@ -59,55 +59,46 @@ do -- Managing data variable synchronization and networking
 	if SERVER then util.AddNetworkString("XCF_DV_NET") end
 
 	-- TODO: Add queue for rate limitting per variable (and forcing option)
-	local ServerKey = "Server"
 
-	-- Internal helper to send a datavar across realms
-	local function SendDataVar(DataVar, Value, SyncServerRealm, TargetPlayer)
+	local function StartWriteDataVar(DataVar, Value, SyncServer)
 		net.Start("XCF_DV_NET")
 		net.WriteUInt(DataVar.UUID, XCF_DATA_VAR_LIMIT_EXPONENT)
-		net.WriteBool(SyncServerRealm)
+		net.WriteBool(SyncServer) -- Whether we are synchronizing server data or client data
 		DataVar.Type.Write(Value)
-
-		if SERVER then
-			if TargetPlayer then net.Send(TargetPlayer)
-			else net.Broadcast() end
-		else
-			net.SendToServer()
-		end
-		-- print("Sent data var", XCF.DataVarIDsToNames[DataVar.UUID], "with value", Value)
-		hook.Run("XCF_OnDataVarChanged", DataVar.Name, DataVar.Scope, Value) -- Notify our realm before we send
 	end
 
-	--- Synchronizes server data with the other realm
-	--- Called from server: Sends to the specific player if specified, or all players if nil
-	--- Called from client: Player argument does nothing
-	function XCF.SetServerData(Name, Scope, Value, TargetPlayer)
+	--- Synchronizes a data variable change across the network
+	--- Called from server:
+	---		XCF.SetDataVar(Name, Scope, Value) -> Same as "Server" case (default)
+	--- 	XCF.SetDataVar(Name, Scope, Value, "Server") -> Updates a server variable and broadcasts to all clients
+	---		XCF.SetDataVar(Name, Scope, Value, Player) -> Updates a client variable for a specific player and sends to that player
+	--- Called from client:
+	---		XCF.SetDataVar(Name, Scope, Value) -> Same as LocalPlayer() case (default)
+	--- 	XCF.SetDataVar(Name, Scope, Value, LocalPlayer()) -> Updates a client variable and sends to the server, but you must use the local player
+	--- 	XCF.SetDataVar(Name, Scope, Value, "Server") -> Updates a client variable for the local player and sends to the server
+	function XCF.SetDataVar(Name, Scope, Value, ToSync)
+		ToSync = ToSync or (CLIENT and LocalPlayer()) or "Server" -- default values
+
+		-- Only do stuff if something changes
 		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
-		if DataVar.Values[ServerKey] ~= Value then
-			DataVar.Values[ServerKey] = Value
-			if SERVER then SendDataVar(DataVar, Value, true, TargetPlayer)
-			else SendDataVar(DataVar, Value, true) end
-		end
-	end
+		if DataVar.Values[ToSync] ~= Value then
+			DataVar.Values[ToSync] = Value
 
-	--- Synchronizes client data with the other realm
-	--- Called from server: Sends to the specific player if specified, or all players if nil
-	--- Called from client: Player argument does nothing
-	function XCF.SetClientData(Name, Scope, Value, TargetPlayer)
-		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
+			local SyncServer = ToSync == "Server"
+			StartWriteDataVar(DataVar, Value, SyncServer)
 
-		-- Called from client: use local player
-		-- Called from server: use player argument or all players if nil
-		local PlayersToSync = CLIENT and {LocalPlayer()} or (TargetPlayer and {TargetPlayer} or player.GetAll())
-		-- print("SetClientData", Key, Value, TargetPlayer)
-		-- PrintTable(PlayersToSync)
+			if CLIENT and SyncServer and not XCF.CanSetServerData(LocalPlayer()) then return end -- Don't allow unauthorized clients to send server data
 
-		-- Iterate over the player(s) and update their values
-		for _, ply in ipairs(PlayersToSync) do
-			if DataVar.Values[ply] ~= Value then
-				DataVar.Values[ply] = Value
-				SendDataVar(DataVar, Value, false, ply)  -- Send update immediately after modification
+			if SERVER then
+				if SyncServer then net.Broadcast() -- Broadcast server change to all clients
+				else net.Send(ToSync) end -- Send specific client change to that client
+			else
+				if SyncServer then net.SendToServer() -- Send server change to server
+				else net.SendToServer() end -- Send client change to server
 			end
+
+			-- print("Sent data var", XCF.DataVarIDsToNames[DataVar.UUID], "with value", Value)
+			hook.Run("XCF_OnDataVarChanged", DataVar.Name, DataVar.Scope, Value) -- Notify our realm before we send
 		end
 	end
 
@@ -126,10 +117,10 @@ do -- Managing data variable synchronization and networking
 		if SERVER and SyncServerRealm and not XCF.CanSetServerData(ply) then return end
 
 		if SERVER then
-			if SyncServerRealm then DataVar.Values[ServerKey] = Value
+			if SyncServerRealm then DataVar.Values.Server = Value
 			else DataVar.Values[ply] = Value end
 		else
-			if SyncServerRealm then DataVar.Values[ServerKey] = Value
+			if SyncServerRealm then DataVar.Values.Server = Value
 			else DataVar.Values[LocalPlayer()] = Value end
 		end
 		hook.Run("XCF_OnDataVarChanged", DataVar.Name, DataVar.Scope, Value) -- Notify any listeners that the variable has changed
@@ -148,9 +139,10 @@ do -- Managing data variable synchronization and networking
 			if not IsValid(ply) then return end
 
 			for _, DataVar in ipairs(XCF.DataVars) do
-				local value = DataVar.Values["Server"]
+				local value = DataVar.Values.Server
 				if value ~= nil then
-					SendDataVar(DataVar, value, true, ply)
+					StartWriteDataVar(DataVar, value, true)
+					net.Send(ply)
 				end
 			end
 		end)
@@ -164,58 +156,36 @@ do -- Managing data variable synchronization and networking
 		return XCF.GetRealmData("ServerDataAllowAdmin", nil, true) and Player:IsAdmin()
 	end
 
-	--- Returns the value of a client data variable for a specific player (or local player if on client)
-	--- If not set, returns the default value for the variable from its definition
-	function XCF.GetClientData(Name, Scope, Player, IgnoreDefaults)
-		if CLIENT then Player = LocalPlayer() end
+	--- Gets the value of a data variable for the given Player/"Server"
+	function XCF.GetDataVar(Name, Scope, Player, IgnoreUnset)
 		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
 		if not DataVar then return end
-		if not IgnoreDefaults and DataVar.Values[Player] == nil then return DataVar.Default end
-		return DataVar.Values[Player]
+
+		local Value = DataVar.Values[Player or (CLIENT and LocalPlayer()) or "Server"]
+		if not Value and DataVar.Default ~= nil then return DataVar.Default end
+		return Value or (not IgnoreUnset and DataVar.Default)
 	end
 
-	--- Returns the value of a server data variable
-	--- If not set, returns the default value for the variable from its definition
-	function XCF.GetServerData(Name, Scope, _, IgnoreDefaults)
-		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
-		if not DataVar then return end
-		if not IgnoreDefaults and DataVar.Values[ServerKey] == nil then return DataVar.Default end
-		return DataVar.Values[ServerKey]
+	--- Sets all data variables at once using a nested table format: Data[Scope][Name] = Value.
+	function XCF.SetDataVars(Data, Player)
+		for scope, _ in pairs(XCF.DataVarsByScopeAndName) do
+			for name, _ in pairs(XCF.DataVarsByScopeAndName[scope] or {}) do
+				if Data[scope] and Data[scope][name] ~= nil then XCF.SetDataVar(name, scope, Data[scope][name], Player) end
+			end
+		end
 	end
 
-	--- Calls GetClientData or GetServerData based on the realm
-	function XCF.GetRealmData(Name, Scope, IgnoreDefaults)
-		if SERVER then return XCF.GetServerData(Name, Scope, nil, IgnoreDefaults)
-		else return XCF.GetClientData(Name, Scope, nil, IgnoreDefaults) end
-	end
-
-	--- Calls SetClientData or SetServerData based on the realm
-	function XCF.SetRealmData(Name, Scope, Value)
-		if SERVER then XCF.SetServerData(Name, Scope, Value)
-		else XCF.SetClientData(Name, Scope, Value) end
-	end
-
-	--- Gets a mapping from scope -> name -> value for all data variables in the specified scope(s).
-	--- If no scope is specified, gets for all scopes.
-	function XCF.GetAllRealmData(Scope, IgnoreDefaults)
+	--- Gets all data variables at once in a nested table format: Data[Scope][Name] = Value.
+	function XCF.GetDataVars(Scope, Player, IgnoreUnset)
 		local Result = {}
 		for scope, _ in pairs(XCF.DataVarsByScopeAndName) do
 			if Scope and scope ~= Scope then continue end
 			for name, _ in pairs(XCF.DataVarsByScopeAndName[scope] or {}) do
 				Result[scope] = Result[scope] or {}
-				Result[scope][name] = XCF.GetRealmData(name, scope, IgnoreDefaults)
+				Result[scope][name] = XCF.GetDataVar(name, scope, Player, IgnoreUnset)
 			end
 		end
 		return Result
-	end
-
-	--- Given a mapping of scope -> name -> value, sets all the data variables to those values.
-	function XCF.SetAllRealmData(Data)
-		for scope, _ in pairs(XCF.DataVarsByScopeAndName) do
-			for name, _ in pairs(XCF.DataVarsByScopeAndName[scope] or {}) do
-				if Data[scope] and Data[scope][name] ~= nil then XCF.SetRealmData(name, scope, Data[scope][name]) end
-			end
-		end
 	end
 end
 

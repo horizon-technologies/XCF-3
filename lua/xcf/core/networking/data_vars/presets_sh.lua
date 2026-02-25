@@ -42,7 +42,7 @@ function XCF.ApplyPreset(Name, Scope)
 	local Preset = XCF.PresetsByScopeAndName[Scope][Name]
 	if not Preset then return end
 
-	XCF.SetAllRealmData(Preset.Data)
+	XCF.SetDataVars(Preset.Data)
 end
 
 --- Saves a preset to disk. Presets are stored in garrysmod/data/xcf/presets/.
