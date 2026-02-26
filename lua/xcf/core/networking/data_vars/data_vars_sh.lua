@@ -42,7 +42,7 @@ do -- Macros for defining data variables and their types
 
 		DataVar.Type = XCF.DataVarTypesByName[Type]
 		DataVar.Default = Default
-		DataVar.Options = Options
+		DataVar.Options = Options or {}
 
 		return DataVar
 	end
@@ -77,7 +77,7 @@ do -- Managing data variable synchronization and networking
 
 		-- Only do stuff if something changes
 		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
-		if not DataVar.Hidden and DataVar.Values[ToSync] ~= Value then
+		if not DataVar.Options.Hidden and DataVar.Values[ToSync] ~= Value then
 			DataVar.Values[ToSync] = Value
 
 			local SyncServer = ToSync == "Server"
@@ -286,7 +286,12 @@ do -- Defining default data variables and types
 	-- Test variable
 	XCF.DefineDataVar("TestVar", "TestScope", "String", "TestValue")
 
+	-- Todo: Separate not networking from not showing on menu
 	XCF.DefineDataVar("ServerDataAllowAdmin", "ServerSettings", "Bool", false)
+	XCF.DefineDataVar("DisableLegalChecks", "ServerSettings", "Bool", false)
+
+	XCF.DefineDataVar("ClientEffectMultiplier", "ClientSettings", "Float", 1.0, {Min = 0, Max = 1.0})
+	XCF.DefineDataVar("ClientSoundMultiplier", "ClientSettings", "Float", 1.0, {Min = 0, Max = 1.0})
 
 	XCF.DefineDataVar("SpawnClass", "ToolGun", "String", "xcf_testent")
 end
