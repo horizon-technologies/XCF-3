@@ -18,7 +18,7 @@ function ENT:ConfigureLuaSeat(Pod, Player)
 		if Veh == Pod then Ply:SetNoDraw(false) end
 	end)
 
-	-- Allow players to enter the seat externally by pressing use on a prop on the same contraption as the baseplate
+	-- Allow players to enter the seat externally by pressing walk + use on a prop on the same contraption as the baseplate
 	hook.Add("PlayerUse", self, function(self, Ply, Ent)
 		if not Ply:KeyDown(IN_WALK) then return end
 		if IsValid(Ent) then
@@ -43,25 +43,30 @@ function ENT:XCF_PreSpawn()
 	self:SetUseType(SIMPLE_USE)
 end
 
-function ENT:XCF_PostSpawn(Owner, _, _, _)
+function ENT:XCF_PostSpawn(Owner, _, _, _, _)
 	print("XCF_PostSpawn", Owner)
+
+	-- Add seat if it was never created
 	if not self.XCF_LiveData.LuaSeat then
 		local Pod = XCF.GenerateLuaSeat(self, Owner, self:GetPos(), self:GetAngles(), self:GetModel(), true)
-		if IsValid(Pod) then
-			self:ConfigureLuaSeat(Pod, Owner)
-		end
+		self:ConfigureLuaSeat(Pod, Owner)
 	end
 end
 
-function ENT:PostEntityPaste(_, _, _, _)
-	local LuaSeat = self.XCF_LiveData.LuaSeat
-	if IsValid(LuaSeat) then
-		self:ConfigureLuaSeat(LuaSeat, self:CPPIGetOwner())
+function ENT:PostEntityPaste(Owner, _, _, _)
+	print("PostEntityPaste", Owner)
+	-- If we had a seat before duplication, find it and reconfigure it.
+	local Pod = self.XCF_LiveData.LuaSeat
+	if not IsValid(Pod) then -- Repair if the seat wasn't duplicated correctly
+		Pod = XCF.GenerateLuaSeat(self, Owner, self:GetPos(), self:GetAngles(), self:GetModel(), true)
 	end
+	self.Pod = Pod
+	self:ConfigureLuaSeat(Pod, Owner)
 end
 
 function ENT:XCF_PostMenuSpawn()
 	print("XCF_PostMenuSpawn")
+	self:SetAngles(Angle(0, 90, 0))
 end
 
 function ENT:UpdateOverlay()

@@ -115,8 +115,8 @@ function XCF.AutoRegister(ENT, Class, _)
 				self.XCF_LiveData[DataVarName] = Sanitized
 			end
 		end
-		if PostEntityPaste then PostEntityPaste(Ent, Player, Ent, CreatedEntities) end
-		Ent.BaseClass.PostEntityPaste(Ent, Player, Ent, CreatedEntities)
+		if PostEntityPaste then PostEntityPaste(self, Player, Ent, CreatedEntities) end
+		self.BaseClass.PostEntityPaste(self, Player, Ent, CreatedEntities)
 	end
 
 	local EntTable = XCF.EntityTables[Class] or {}
