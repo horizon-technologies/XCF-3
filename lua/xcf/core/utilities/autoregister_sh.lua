@@ -75,12 +75,6 @@ function XCF.AutoRegister(ENT, Class, _)
 		XCF.RestoreEntity(self)
 	end
 
-	if not ENT.XCF_PostMenuSpawn then
-		function ENT:XCF_PostMenuSpawn()
-			XCF.DropToFloor(self)
-		end
-	end
-
 	local OnRemove = ENT.OnRemove
 	function ENT:OnRemove(IsFullUpdate)
 		print("OnRemove", self, IsFullUpdate)
@@ -92,6 +86,14 @@ function XCF.AutoRegister(ENT, Class, _)
 	function ENT:PreEntityCopy()
 		print("PreEntityCopy")
 		self.XCF_DupeData = table.Copy(self.XCF_LiveData)
+		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or {}) do
+			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
+			if DataVar and DataVar.Type.PreCopy then
+				local Sanitized = DataVar.Type.PreCopy(self, DataVar, self.XCF_DupeData[DataVarName])
+				self.XCF_DupeData[DataVarName] = Sanitized
+				print("PreCopied", DataVarName, Sanitized)
+			end
+		end
 		if PreEntityCopy then PreEntityCopy(self) end
 		self.BaseClass.PreEntityCopy(self)
 	end
@@ -106,6 +108,13 @@ function XCF.AutoRegister(ENT, Class, _)
 	local PostEntityPaste = ENT.PostEntityPaste
 	function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
 		print("PostEntityPaste", Ent, CreatedEntities)
+		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or {}) do
+			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
+			if DataVar and DataVar.Type.PostPaste then
+				local Sanitized = DataVar.Type.PostPaste(self, DataVar, self.XCF_LiveData[DataVarName], CreatedEntities)
+				self.XCF_LiveData[DataVarName] = Sanitized
+			end
+		end
 		if PostEntityPaste then PostEntityPaste(Ent, Player, Ent, CreatedEntities) end
 		Ent.BaseClass.PostEntityPaste(Ent, Player, Ent, CreatedEntities)
 	end

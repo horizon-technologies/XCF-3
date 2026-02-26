@@ -187,6 +187,7 @@ end
 
 do -- Automatic Menu Generation
 	function XCF.CreatePanelFromDataVar(Menu, DataVar)
+		if DataVar.Options.Hidden then return end
 		if not DataVar.Type.CreatePanel then return end
 		local Panel = DataVar.Type.CreatePanel(Menu, DataVar)
 		-- print(Panel, DataVar.Name, DataVar.Scope)
@@ -276,8 +277,8 @@ do -- Defining default data variables and types
 
 	-- Advanced types
 	local StoredEntityDV = XCF.DefineDataVarType("StoredEntity")
-	StoredEntityDV.PreCopy = function(Value) return Value:EntIndex() end
-	StoredEntityDV.PostPaste = function(Value, CreatedEnts) return CreatedEnts[Value] end
+	StoredEntityDV.PreCopy = function(_, _, Value) return Value:EntIndex() end
+	StoredEntityDV.PostPaste = function(_, _, Value, CreatedEnts) return CreatedEnts[Value] end
 	StoredEntityDV.CreatePanel = function(Menu, DataVar) return Menu:AddCheckbox(DataVar.Name) end
 
 	----------------------------------------------------------

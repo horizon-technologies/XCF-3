@@ -75,7 +75,7 @@ do -- Baseplate lua seat generation
 
 	--- Creates and returns a lua seat after parenting it to the given entity.
 	--- Returns nil if the seat couldn't be created for some reason.
-	function ACF.GenerateLuaSeat(Entity, Player, Pos, Angle, Model)
+	function XCF.GenerateLuaSeat(Entity, Player, Pos, Angle, Model)
 		if not Player:CheckLimit("vehicles") then return end
 
 		local Pod = ents.Create("prop_vehicle_prisoner_pod")
@@ -111,41 +111,41 @@ do -- Baseplate lua seat generation
 
 	timer.Simple(1, function()
 		if WireLib then
-			if not ACF.WirelibDetour_GetClosestRealVehicle then
-				ACF.WirelibDetour_GetClosestRealVehicle = WireLib.GetClosestRealVehicle
+			if not XCF.WirelibDetour_GetClosestRealVehicle then
+				XCF.WirelibDetour_GetClosestRealVehicle = WireLib.GetClosestRealVehicle
 			end
-			local ACF_WirelibDetour_GetClosestRealVehicle = ACF.WirelibDetour_GetClosestRealVehicle
+			local XCF_WirelibDetour_GetClosestRealVehicle = XCF.WirelibDetour_GetClosestRealVehicle
 			function WireLib.GetClosestRealVehicle(Vehicle, Position, Notify)
-				if IsValid(Vehicle) and Vehicle.ACF and Vehicle.ACF_GetSeatProxy then
-					local Pod = Vehicle:ACF_GetSeatProxy()
+				if IsValid(Vehicle) and Vehicle.XCF and Vehicle.XCF_GetSeatProxy then
+					local Pod = Vehicle:XCF_GetSeatProxy()
 					if IsValid(Pod) then return Pod end
 				end
 
-				return ACF_WirelibDetour_GetClosestRealVehicle(Vehicle, Position, Notify)
+				return XCF_WirelibDetour_GetClosestRealVehicle(Vehicle, Position, Notify)
 			end
 		end
 
 		if SF then
 			local tool = weapons.GetStored("gmod_tool").Tool.starfall_component
-			if not ACF.Starfall_DetourComponentRightClick then
-				ACF.Starfall_DetourComponentRightClick = tool.RightClick
+			if not XCF.Starfall_DetourComponentRightClick then
+				XCF.Starfall_DetourComponentRightClick = tool.RightClick
 			end
 
-			local ACF_Starfall_DetourComponentRightClick = ACF.Starfall_DetourComponentRightClick
+			local XCF_Starfall_DetourComponentRightClick = XCF.Starfall_DetourComponentRightClick
 
 			function tool:RightClick(trace)
 				if not trace.HitPos or not (trace.Entity and trace.Entity:IsValid()) or trace.Entity:IsPlayer() then return false end
 				if CLIENT then return true end
 
 				local ent = trace.Entity
-				if self:GetStage() == 1 and self.Component:GetClass() == "starfall_hud" and ent.ACF and ent.ACF_GetSeatProxy then
-					self.Component:LinkVehicle(ent:ACF_GetSeatProxy())
+				if self:GetStage() == 1 and self.Component:GetClass() == "starfall_hud" and ent.XCF and ent.XCF_GetSeatProxy then
+					self.Component:LinkVehicle(ent:XCF_GetSeatProxy())
 					self:SetStage(0)
 					SF.AddNotify(self:GetOwner(), "Linked to vehicle successfully.", "GENERIC" , 4, "DRIP2")
 					return true
 				end
 
-				return ACF_Starfall_DetourComponentRightClick(self, trace)
+				return XCF_Starfall_DetourComponentRightClick(self, trace)
 			end
 		end
 	end)
@@ -155,7 +155,7 @@ do -- Baseplate lua seat generation
 	--- @param Entity any The entity to attach the seat to
 	--- @param Pod any The seat to configure
 	--- @param Player any The owner of the seat
-	function ACF.ConfigureLuaSeat(Entity, Pod, Player)
+	function XCF.ConfigureLuaSeat(Entity, Pod, Player)
 		-- Just to be safe...
 		Pod.Owner = Player
 		Pod:CPPISetOwner(Player)
@@ -164,8 +164,8 @@ do -- Baseplate lua seat generation
 		Pod:SetKeyValue("limitview", 0)                                            -- Let the player look around
 
 		Pod.Vehicle = Entity
-		Pod.ACF = Pod.ACF or {}
-		Pod.ACF.LuaGeneratedSeat = true
+		Pod.XCF = Pod.XCF or {}
+		Pod.XCF.LuaGeneratedSeat = true
 
 		if not IsValid(Pod) then return end
 
@@ -178,7 +178,9 @@ do -- Baseplate lua seat generation
 		-- the duplicator to make it not-solid. source: advdupe2/lua/advdupe2/sv_clipboard.lua
 		Pod.SolidMod = true
 
-		Pod.ACF_InvisibleToBallistics = true
-		Pod.ACF_InvisibleToTrace = true
+		Pod.XCF_InvisibleToBallistics = true
+		Pod.XCF_InvisibleToTrace = true
+
+		Entity.Pod = Pod
 	end
 end
