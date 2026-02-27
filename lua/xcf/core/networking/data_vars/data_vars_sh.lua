@@ -160,6 +160,7 @@ do -- Managing data variable synchronization and networking
 	function XCF.GetDataVar(Name, Scope, Player, IgnoreUnset)
 		local DataVar = XCF.DataVarsByScopeAndName[Scope][Name]
 		if not DataVar then return end
+		if DataVar.Options.Hidden then return nil end
 
 		local Value = DataVar.Values[Player or (CLIENT and LocalPlayer()) or "Server"]
 		if not Value and not IgnoreUnset then return DataVar.Default end

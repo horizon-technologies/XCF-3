@@ -93,6 +93,10 @@ function GetClassMeta(ID)
 	return getmetatable(Class)
 end
 
+XCF.DefineClass = DefineClass
+XCF.GetClass = GetClass
+XCF.GetClassMeta = GetClassMeta
+
 -- Example test code
 -- local Snake = DefineClass("Snake", "Reptile")
 -- local Frog = DefineClass("Frog", "Reptile")
