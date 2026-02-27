@@ -72,8 +72,10 @@ function ENT:Initialize()
 	self.Initialized = true
 end
 
+-- Hides the overlay if we're in a vehicle
+local LP = LocalPlayer
 function ENT:Draw()
-	if LocalPlayer():InVehicle() then self:DrawModel() return end
+	if LP():InVehicle() then self:DrawModel() return end
 	self:DoNormalDraw()
 end
 

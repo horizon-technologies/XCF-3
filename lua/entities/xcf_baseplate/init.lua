@@ -32,20 +32,16 @@ function ENT:ConfigureLuaSeat(Pod, Player)
 end
 
 function ENT:XCF_PostUpdateEntityData()
-	print("XCF_PostUpdateEntityData")
 	self:SetSize(self.XCF_LiveData.Size)
 end
 
 function ENT:XCF_PreSpawn()
-	print("XCF_PreSpawn")
 	self:SetScaledModel("models/holograms/cube.mdl")
 	self:SetMaterial("hunter/myplastic")
 	self:SetUseType(SIMPLE_USE)
 end
 
 function ENT:XCF_PostSpawn(Owner, _, _, _, _)
-	print("XCF_PostSpawn", Owner)
-
 	-- Add seat if it was never created
 	if not self.XCF_LiveData.LuaSeat then
 		local Pod = XCF.GenerateLuaSeat(self, Owner, self:GetPos(), self:GetAngles(), self:GetModel(), true)
@@ -54,7 +50,6 @@ function ENT:XCF_PostSpawn(Owner, _, _, _, _)
 end
 
 function ENT:PostEntityPaste(Owner, _, _, _)
-	print("PostEntityPaste", Owner)
 	-- If we had a seat before duplication, find it and reconfigure it.
 	local Pod = self.XCF_LiveData.LuaSeat
 	if not IsValid(Pod) then -- Repair if the seat wasn't duplicated correctly
@@ -65,7 +60,6 @@ function ENT:PostEntityPaste(Owner, _, _, _)
 end
 
 function ENT:XCF_PostMenuSpawn()
-	print("XCF_PostMenuSpawn")
 	self:SetAngles(Angle(0, 90, 0))
 end
 

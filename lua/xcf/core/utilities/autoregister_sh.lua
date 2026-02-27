@@ -26,7 +26,6 @@ local empty_table = {}
 
 -- Public entry point
 function XCF.SpawnEntity(Class, Player, Pos, Angle, DataVarKVs, FromDupe, NoUndo)
-	print("XCF.SpawnEntity")
 	local EntityTable = XCF.EntityTables[Class]
 	if not EntityTable then return false, Class .. " is not a registered XCF entity class." end
 	if not EntityTable.Spawn then return false, Class .. " does not have a spawn function." end
@@ -52,7 +51,6 @@ end
 
 -- Public entry point
 function XCF.UpdateEntityData(Entity, DataVarKVs)
-	print("XCF.UpdateEntityData")
 	if not IsValid(Entity) then return false, "Can't update invalid entities." end
 	if not isfunction(Entity.Update) then return false, "This entity does not support updating." end
 
@@ -68,8 +66,6 @@ function XCF.UpdateEntityData(Entity, DataVarKVs)
 end
 
 function XCF.AutoRegister(ENT, Class, _)
-	print("Autoregistered: ", ENT.PrintName)
-
 	if CLIENT then return end -- TODO: Maybe this is wrong?
 
 	function ENT:Update(DataVarKVs)
@@ -86,21 +82,18 @@ function XCF.AutoRegister(ENT, Class, _)
 
 	local OnRemove = ENT.OnRemove
 	function ENT:OnRemove(IsFullUpdate)
-		print("OnRemove", self, IsFullUpdate)
 		if OnRemove then OnRemove(self, IsFullUpdate) end
 		WireLib.Remove(self)
 	end
 
 	local PreEntityCopy = ENT.PreEntityCopy
 	function ENT:PreEntityCopy()
-		print("PreEntityCopy")
 		self.XCF_DupeData = table.Copy(self.XCF_LiveData)
 		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or empty_table) do
 			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
 			if DataVar and DataVar.Type.PreCopy then
 				local Sanitized = DataVar.Type.PreCopy(self, DataVar, self.XCF_DupeData[DataVarName])
 				self.XCF_DupeData[DataVarName] = Sanitized
-				print("PreCopied", DataVarName, Sanitized)
 			end
 		end
 		if PreEntityCopy then PreEntityCopy(self) end
@@ -109,14 +102,12 @@ function XCF.AutoRegister(ENT, Class, _)
 
 	local OnDuplicated = ENT.OnDuplicated
 	function ENT:OnDuplicated(EntTable)
-		print("OnDuplicated", self, EntTable)
 		if OnDuplicated then OnDuplicated(self, EntTable) end
 		self.BaseClass.OnDuplicated(self, EntTable)
 	end
 
 	local PostEntityPaste = ENT.PostEntityPaste
 	function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
-		print("PostEntityPaste", Ent, CreatedEntities)
 		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or empty_table) do
 			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
 			if DataVar and DataVar.Type.PostPaste then
@@ -133,7 +124,6 @@ function XCF.AutoRegister(ENT, Class, _)
 
 	-- Entity specific spawn function
 	function EntTable.Spawn(Player, Pos, Angle, DataVarKVs, FromDupe)
-		print("EntityTable.Spawn")
 		local New = ents.Create(Class)
 		if not IsValid(New) then return end
 
