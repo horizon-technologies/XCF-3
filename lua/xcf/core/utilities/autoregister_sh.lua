@@ -70,6 +70,8 @@ end
 function XCF.AutoRegister(ENT, Class, _)
 	print("Autoregistered: ", ENT.PrintName)
 
+	if CLIENT then return end -- TODO: Maybe this is wrong?
+
 	function ENT:Update(DataVarKVs)
 		XCF.SaveEntity(self)
 

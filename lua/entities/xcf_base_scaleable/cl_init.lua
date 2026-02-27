@@ -72,6 +72,11 @@ function ENT:Initialize()
 	self.Initialized = true
 end
 
+function ENT:Draw()
+	if LocalPlayer():InVehicle() then self:DrawModel() return end
+	self:DoNormalDraw()
+end
+
 -- TODO: Is this needed
 function ENT:CalcAbsolutePosition() -- Faking sync
 	local PhysObj  = self:GetPhysicsObject()
