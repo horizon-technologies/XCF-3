@@ -154,6 +154,22 @@ function XCF.CreateMainMenu(Menu)
 	return Tree
 end
 
+--- Returns a function that creates a menu for the specified entity class
+--- Make sure a data var scope for the EntityClass has been created before calling this.
+function XCF.EntityMenuCallback(EntityClass)
+	local ClassData = baseclass.Get( EntityClass )
+	return function(MenuPanel)
+		XCF.SetDataVar("SpawnClass", "ToolGun", EntityClass)
+
+		MenuPanel:AddLabel(ClassData.XCF_Menu_Description or "No description available.")
+
+		local Base = MenuPanel:AddCollapsible("Settings")
+		Base:AddPresetsBar(EntityClass)
+		Base:AddModelPreview(ClassData.XCF_Menu_Model or "models/hunter/blocks/cube025x025x025.mdl")
+		XCF.CreatePanelsFromDataVars(Base, EntityClass)
+	end
+end
+
 -- Pop out menu tab example
 concommand.Add("xcf_menu_console", function()
 	local Width, Height = ScrW(), ScrH()
