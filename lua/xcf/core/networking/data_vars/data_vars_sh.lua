@@ -295,6 +295,14 @@ do -- Defining default data variables and types
 		end
 		return Result
 	end
+	local EnumeratedStringDV = XCF.DefineDataVarType("EnumeratedString")
+	EnumeratedStringDV.NetWrite = net.WriteString
+	EnumeratedStringDV.NetRead = net.ReadString
+	EnumeratedStringDV.CreatePanel = function(Menu, DataVar)
+		local Combo = Menu:AddComboBox(DataVar.Name)
+		for _, Option in ipairs(DataVar.Options.Choices) do Combo:AddChoice(Option, Option) end
+		return Combo
+	end
 
 	-- TODO: Change to a class system to allow for types to inherit functionality from each other
 

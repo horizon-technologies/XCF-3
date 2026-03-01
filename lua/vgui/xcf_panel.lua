@@ -147,6 +147,33 @@ function PANEL:AddComboBox()
 	Panel:SetSortItems(false)
 	Panel:SetDark(true)
 	Panel:SetWrap(true)
+
+	function Panel:BindToDataVar(Name, Scope, TargetRealm)
+		local suppress = false
+		local DataLookup = {}
+		for k, v in ipairs(self.Data) do DataLookup[v] = k end
+
+		local function SetValue(data)
+			suppress = true
+			self:ChooseOptionID(DataLookup[data] or 1)
+			suppress = false
+		end
+
+		self.OnSelect = function(_, _, _, data)
+			if suppress then return end
+			XCF.SetDataVar(Name, Scope, data, TargetRealm)
+		end
+
+		self:WatchDataVar(Name, Scope, function(value)
+			SetValue(value)
+		end)
+
+		local initial = XCF.GetDataVar(Name, Scope, TargetRealm)
+		if initial ~= nil then
+			SetValue(initial)
+		end
+	end
+
 	return Panel
 end
 
