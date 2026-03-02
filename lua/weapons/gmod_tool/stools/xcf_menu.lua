@@ -37,7 +37,7 @@ function TOOL:LeftClick(Trace)
 		if Success then
 			local PhysObj = Result:GetPhysicsObject()
 
-			Result:XCF_PostMenuSpawn()
+			if Result.XCF_PostMenuSpawn then Result:XCF_PostMenuSpawn() end
 			XCF.DropToFloor(Result)
 
 			Result:SetSpawnEffect(true)

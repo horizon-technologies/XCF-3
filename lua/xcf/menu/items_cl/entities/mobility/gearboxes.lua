@@ -1,1 +1,1 @@
-XCF.AddMenuItem(2, "Gearboxes", "icon16/cog.png", nil, "Mobility")
+XCF.AddMenuItem(2, "Gearboxes", "icon16/cog.png", XCF.EntityMenuCallback("xcf_gearbox"), "Mobility")

@@ -78,7 +78,7 @@ function XCF.AutoRegister(ENT, Class)
 			self.XCF_LiveData[DataVarName] = Value
 		end
 
-		self:XCF_PostUpdateEntityData()
+		if self.XCF_PostUpdateEntityData then self:XCF_PostUpdateEntityData() end
 		XCF.RestoreEntity(self)
 	end
 
