@@ -50,7 +50,7 @@ end
 
 XCF.MainMenuLookup = XCF.MainMenuLookup or {}
 --- Adds a menu item to the main menu lookup.
-function XCF.AddMenuItem(Order, Name, Icon, Action, Parent)
+function XCF.AddMenuItem(Order, Name, Icon, Action, Parent, Select)
 	XCF.MainMenuLookup[Name] = {
 		Order = Order,
 		Name = Name,
@@ -58,6 +58,7 @@ function XCF.AddMenuItem(Order, Name, Icon, Action, Parent)
 		Action = Action,
 		Parent = Parent,
 		Children = {},
+		Select = Select,
 	}
 end
 
@@ -137,6 +138,8 @@ function XCF.CreateMainMenu(Menu)
 
 		Node.Ancestor = Node.Ancestor or ParentNode.Ancestor
 
+		if NodeData.Select then DTree.ToSelect = Node end
+
 		-- Recursively add children
 		if NodeData.Children then
 			for _, ChildData in ipairs(NodeData.Children) do
@@ -150,6 +153,8 @@ function XCF.CreateMainMenu(Menu)
 	for _, NodeData in ipairs(Lookup.Base.Children) do
 		AddNodeWithChildren(Tree, Tree, NodeData):ExpandRecurse(true)
 	end
+	
+	if Tree.ToSelect then Tree:SetSelectedItem(Tree.ToSelect) end
 
 	return Tree
 end
