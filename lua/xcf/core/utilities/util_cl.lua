@@ -153,7 +153,7 @@ function XCF.CreateMainMenu(Menu)
 	for _, NodeData in ipairs(Lookup.Base.Children) do
 		AddNodeWithChildren(Tree, Tree, NodeData):ExpandRecurse(true)
 	end
-	
+
 	if Tree.ToSelect then Tree:SetSelectedItem(Tree.ToSelect) end
 
 	return Tree
