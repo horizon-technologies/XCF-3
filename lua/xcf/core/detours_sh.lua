@@ -141,3 +141,13 @@ end)
         return E2ApplyForce_Orig(scope, args, ...)
     end)
 ]]
+
+-----------------------------------------------------------
+--- Not part of the library
+function XCF.IsXCFContraption(ent)
+    if not IsValid(ent) then return false end
+    if ent.IsXCFEntity then return true end
+    local contraption = ent:GetContraption()
+    if contraption and contraption.XCF_Baseplate then return true end
+    return false
+end
