@@ -2,7 +2,6 @@ DEFINE_BASECLASS("xcf_base_scaleable")
 
 ENT.PrintName      = "XCF baseplate"
 ENT.WireDebugName  = "XCF baseplate"
-ENT.Spawnable = false
 
 ENT.XCF_Class = "xcf_baseplate"
 ENT.XCF_Menu_Model = "models/hunter/blocks/cube075x075x075.mdl"

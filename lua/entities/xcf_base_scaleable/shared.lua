@@ -7,6 +7,7 @@ ENT.Spawnable = false
 ENT.Category = "Other"
 ENT.Author = "XCF Team"
 
+ENT.IsXCFEntity = true
 ENT.XCFIsScalable = true
 ENT.XCFScaleData = { ModelPath = "", Scale = Vector(1, 1, 1), Size = Vector(1, 1, 1), OriginalSize = Vector(1, 1, 1) }
 
