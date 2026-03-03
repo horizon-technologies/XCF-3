@@ -1,8 +1,8 @@
-local DetourE2s = XCF.DetourE2s
+local Detours = XCF.Detours
 local IsXCFContraption = XCF.IsXCFContraption
 
 local function DetourE2(E2Sig)
-    local Func Func = DetourE2s.Expression2(E2Sig, function(Scope, Args, ...)
+    local Func Func = Detours.Expression2(E2Sig, function(Scope, Args, ...)
         if IsXCFContraption(Args[1]) then print("Detoured E2 function: " .. E2Sig) return end
         return Func(Scope, Args, ...)
     end)
