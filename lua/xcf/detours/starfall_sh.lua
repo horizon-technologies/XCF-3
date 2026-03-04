@@ -1,5 +1,7 @@
 local IsXCFContraption = XCF.IsXCFContraption
 hook.Add("XCF" .. "Detours_Starfall_PrePatchInstance", "StarfallChecks", function(Instance)
+    if CLIENT then return end -- Only detour sv functions
+
     local _, eunwrap     = Instance.Types.Entity.Wrap, Instance.Types.Entity.Unwrap
 
     local function DetourMethod(Type, _, Method, _, Cond, Override)

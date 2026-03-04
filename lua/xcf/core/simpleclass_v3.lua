@@ -33,7 +33,7 @@ local function InitializeClass(ID, NewClass, BaseClass)
 				__index = self, -- Instances should use their class' static methods/variables if they dont have them set
 				__tostring = function(instance) return "Instance of Class(" .. instance.ID .. ")" end, -- Avoid ambiguity/shadowing of self and the instance
 			})
-			if self.__new then self.__new(obj, ...) end -- Constructor if applicable
+			if self.initialize then self.initialize(obj, ...) end -- Constructor if applicable
 			return obj
 		end
 	}
