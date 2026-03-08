@@ -24,23 +24,24 @@ end
 
 Base:CompileChildren()
 
-if SERVER then
-	function ENT:Initialize()
-		-- Initializing the multi-convex physics mesh
-		local res = self:PhysicsInitMultiConvex(Base.convexes)
-		print("init", res)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
-		self:SetSolid(SOLID_VPHYSICS)
-		self:EnableCustomCollisions(true)
-		self:DrawShadow(false)
+function ENT:Initialize()
+	-- Initializing the multi-convex physics mesh
+	self:SetModel( "models/combine_helicopter/helicopter_bomb01.mdl" )
+	local res = self:PhysicsInitMultiConvex(Base.convexes)
+	print("init", res)
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetSolid(SOLID_VPHYSICS)
+	self:EnableCustomCollisions(true)
+	self:DrawShadow(false)
 
-		local PhysObj = self:GetPhysicsObject()
-		if IsValid(PhysObj) then
-			PhysObj:EnableMotion(false)
-			PhysObj:Sleep()
-		end
+	local PhysObj = self:GetPhysicsObject()
+	if IsValid(PhysObj) then
+		PhysObj:EnableMotion(false)
+		PhysObj:Sleep()
 	end
-else
+end
+
+if CLIENT then
 	local NewMat = Material("hunter/myplastic")
 	local NewMesh = Mesh(NewMat)
 	NewMesh:BuildFromTriangles(Base.triangles)
