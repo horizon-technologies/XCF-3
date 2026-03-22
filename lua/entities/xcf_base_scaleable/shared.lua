@@ -1,4 +1,5 @@
 DEFINE_BASECLASS("base_wire_entity") -- Use wiremod's base entity for easy wiremod integration
+XCF.SetupENT(ENT)
 
 ENT.PrintName      = "XCF base scalable entity"
 ENT.WireDebugName  = "XCF base scalable entity"

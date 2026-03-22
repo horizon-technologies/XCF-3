@@ -1,4 +1,5 @@
 DEFINE_BASECLASS("base_wire_entity")
+XCF.SetupENT(ENT)
 
 ENT.PrintName      = "XCF base procedurable entity"
 ENT.WireDebugName  = "XCF base procedurable entity"

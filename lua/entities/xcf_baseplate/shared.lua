@@ -1,9 +1,9 @@
 DEFINE_BASECLASS("xcf_base_scaleable")
+XCF.SetupENT(ENT)
 
 ENT.PrintName      = "XCF baseplate"
 ENT.WireDebugName  = "XCF baseplate"
 
-ENT.XCF_Class = "xcf_baseplate"
 ENT.XCF_Menu_Model = "models/hunter/blocks/cube075x075x075.mdl"
 ENT.XCF_Menu_Description = "Base of all XCF contraptions. Build your vehicle off of this."
 

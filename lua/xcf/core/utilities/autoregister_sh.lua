@@ -65,6 +65,11 @@ function XCF.UpdateEntityData(Entity, DataVarKVs)
 	return Result, Message
 end
 
+function XCF.SetupENT(ENT)
+	local Class  = string.Split(ENT.Folder, "/"); Class = Class[#Class]
+	ENT.XCF_Class = Class
+end
+
 function XCF.AutoRegister(ENT, Class)
 	if CLIENT then return end -- TODO: Maybe this is wrong?
 
