@@ -15,12 +15,12 @@ ENT.XCFIsProcedural = true
 local Base = XCF.GetClass("Primitive3D")()
 Base:Dock(Vector(), Angle())
 
-local Shaft = XCF.GetClass("Cylinder")({radius=6, height=36})
-Shaft:DockRelSimple(Base, Vector(0,0,0), Angle(90,0,0))
+local Shaft = XCF.GetClass("Cylinder")({radius = 6, height = 36})
+Shaft:DockRelSimple(Base, Vector(0, 0, 0), Angle(90, 0, 0))
 
-for i = 1,4 do
-	local Piston = XCF.GetClass("Cube")({length=36,width=6,height=12})
-	Piston:DockRelAdv(Base, Angle(), Vector(0,0,6), Angle(0,0,45+90*i), Vector(0,0,-5), Angle(0,0,0))
+for i = 1, 4 do
+	local Piston = XCF.GetClass("Cube")({length = 36, width = 6, height = 12})
+	Piston:DockRelAdv(Base, Angle(), Vector(0, 0, 6), Angle(0, 0, 45 + 90 * i), Vector(0, 0, -5), Angle(0, 0, 0))
 end
 
 Base:CompileChildren()
