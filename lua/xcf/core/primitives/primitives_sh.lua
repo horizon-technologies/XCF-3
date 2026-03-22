@@ -1,6 +1,6 @@
 local DefineClass = XCF.DefineClass
 
-local Primitive3D = DefineClass("Primitive3D", nil, function(Class, BaseClass)
+DefineClass("Primitive3D", nil, function(Class)
 	function Class:initialize(options)
 		self.children = {}
 		self.visible = true
@@ -109,9 +109,9 @@ local Primitive3D = DefineClass("Primitive3D", nil, function(Class, BaseClass)
 			local edge2 = wv3 - wv1
 			local normal = edge2:Cross(edge1):GetNormalized()
 
-			local u1,v1 = ComputeUV(wv1, normal)
-			local u2,v2 = ComputeUV(wv2, normal)
-			local u3,v3 = ComputeUV(wv3, normal)
+			local u1, v1 = ComputeUV(wv1, normal)
+			local u2, v2 = ComputeUV(wv2, normal)
+			local u3, v3 = ComputeUV(wv3, normal)
 
 			table.insert(self.triangles, {pos = wv1, normal = normal, u = u1, v = v1})
 			table.insert(self.triangles, {pos = wv2, normal = normal, u = u2, v = v2})
@@ -139,9 +139,9 @@ local Primitive3D = DefineClass("Primitive3D", nil, function(Class, BaseClass)
 	end
 end)
 
-local Cube = DefineClass("Cube", "Primitive3D", function(Class, BaseClass)
+DefineClass("Cube", "Primitive3D", function(Class, BaseClass)
 	function Class:initialize(options)
-		Primitive3D.initialize(self, options)
+		BaseClass.initialize(self, options)
 		self.length = options.length or 1
 		self.width = options.width or 1
 		self.height = options.height or 1
@@ -179,7 +179,7 @@ local Cube = DefineClass("Cube", "Primitive3D", function(Class, BaseClass)
 end)
 
 
-local Cylinder = DefineClass("Cylinder", "Primitive3D", function(Class, BaseClass)
+DefineClass("Cylinder", "Primitive3D", function(Class, BaseClass)
 	function Class:initialize(options)
 		BaseClass.initialize(self, options)
 
@@ -232,7 +232,7 @@ local Cylinder = DefineClass("Cylinder", "Primitive3D", function(Class, BaseClas
 	end
 end)
 
-local HollowCylinder = DefineClass("HollowCylinder", "Primitive3D", function(Class, BaseClass)
+DefineClass("HollowCylinder", "Primitive3D", function(Class, BaseClass)
 	function Class:initialize(options)
 		BaseClass.initialize(self, options)
 
