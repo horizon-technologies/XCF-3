@@ -61,7 +61,7 @@ end
 --- @param BaseID string? The ID of the parent class
 --- @param OnInit function? Ran when both the class and its parent are initialized. New and base class tables are passed as args.
 --- @return NewClass table The table of the new class
-function DefineClass(ID, BaseID, OnInit)
+local function DefineClass(ID, BaseID, OnInit)
 	local BaseClass = Classes[BaseID]
 	local NewClass = {
 		ID = ID,
@@ -83,12 +83,12 @@ function DefineClass(ID, BaseID, OnInit)
 end
 
 --- Returns a class' table from its ID
-function GetClass(ID)
+local function GetClass(ID)
 	return Classes[ID]
 end
 
 --- Returns a class' metatable from its ID
-function GetClassMeta(ID)
+local function GetClassMeta(ID)
 	local Class = GetClass(ID)
 	return getmetatable(Class)
 end
