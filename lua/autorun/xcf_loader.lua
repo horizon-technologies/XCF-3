@@ -1,3 +1,3 @@
-include("includes/gloader.lua")
+include("includes/xcf_gloader.lua")
 
 gloader.Load("XCF", "xcf")

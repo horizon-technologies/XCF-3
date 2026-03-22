@@ -221,34 +221,46 @@ do -- Defining default data variables and types
 	-- Basic types
 	local BoolDV = XCF.DefineDataVarType("Bool")
 	BoolDV.CreatePanel = function(Menu, DataVar) return Menu:AddCheckbox(DataVar.Name) end
+	BoolDV.Verify = function(x) return isbool(x) end
 
 	local StringDV = XCF.DefineDataVarType("String")
 	StringDV.CreatePanel = function(Menu, DataVar) return Menu:AddTextEntry(DataVar.Name) end
+	StringDV.Verify = function(x) return isstring(x) end
 
 	local FloatDV = XCF.DefineDataVarType("Float")
 	FloatDV.CreatePanel = CreateSliderMenu
+	FloatDV.Verify = function(x) return isnumber(x) end
 
 	local DoubleDV = XCF.DefineDataVarType("Double")
 	DoubleDV.CreatePanel = CreateSliderMenu
+	DoubleDV.Verify = function(x) return isnumber(x) end
 
-	XCF.DefineDataVarType("Color")
+	local ColorDV = XCF.DefineDataVarType("Color")
+	ColorDV.Verify = function(x) return IsColor(x) end
 
-	XCF.DefineDataVarType("Angle")
+	local AngleDV = XCF.DefineDataVarType("Angle")
+	AngleDV.Verify = function(x) return isangle(x) end
 
 	local VectorDV = XCF.DefineDataVarType("Vector")
 	VectorDV.CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2) end
 
-	XCF.DefineDataVarType("Normal")
+	local NormalDV = XCF.DefineDataVarType("Normal")
+	NormalDV.Verify = function(x) return isvector(x) and x:Length() == 1 end
 
-	XCF.DefineDataVarType("Entity")
+	local EntityDV = XCF.DefineDataVarType("Entity")
+	EntityDV.Verify = function(x) return IsValid(x) end
 
-	XCF.DefineDataVarType("Player")
+	local PlayerDV = XCF.DefineDataVarType("Player")
+	PlayerDV.Verify = function(x) return IsValid(x) and x:IsPlayer() end
 
-	XCF.DefineDataVarType("Table")
+	local TableDV = XCF.DefineDataVarType("Table")
+	TableDV.Verify = function(x) return istable(x) end
 
-	XCF.DefineDataVarType("Data")
+	local DataDV = XCF.DefineDataVarType("Data")
+	DataDV.Verify = function(x) return isstring(x) end
 
-	XCF.DefineDataVarType("Bit")
+	local BoolDV = XCF.DefineDataVarType("Bit")
+	BoolDV.Verify = function(x) return isbool(x) end
 
 	-- Signed integers (1 to 32 bits)
 	local IntDV = XCF.DefineDataVarType("Int")
