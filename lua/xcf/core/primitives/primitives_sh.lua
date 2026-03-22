@@ -1,7 +1,7 @@
 local DefineClass = XCF.DefineClass
 
 DefineClass("Primitive3D", nil, function(Class)
-	function Class:initialize(options)
+	function Class:initialize()
 		self.children = {}
 		self.visible = true
 		self.physical = true
