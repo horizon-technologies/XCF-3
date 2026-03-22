@@ -1,4 +1,4 @@
--- TODO: Localize globals?
+-- TODO: Localize globals for optimization? e.g. cache data var tables for this specific class, instead of looking them up through the XCF global variable
 
 --[[
 Call Order:
@@ -121,10 +121,6 @@ function XCF.AutoRegister(ENT, Class)
 				self.XCF_DupeData[DataVarName] = ToDupe
 			end
 		end
-	end)
-
-	HijackBefore("OnDuplicated", function(self, EntTable)
-		if OnDuplicated then OnDuplicated(self, EntTable) end
 	end)
 
 	-- TODO: Need to update overlay etc. after this?

@@ -16,6 +16,7 @@ do -- Player loaded hook
 			net.Start("XCF_PlayerLoaded")
 			net.SendToServer()
 			print("CL InitPostEntity " .. LocalPlayer():Nick())
+			hook.Run("XCF_OnLoadPlayer", LocalPlayer())
 			hook.Remove("InitPostEntity", "XCF Player Loaded")
 		end)
 	end

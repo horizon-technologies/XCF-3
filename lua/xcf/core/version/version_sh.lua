@@ -113,3 +113,80 @@ function XCF.CheckLocalVersion()
 
 	return Result
 end
+
+--- Convert GitHub date string to epoch
+local function GitDateToEpoch(dateStr)
+	local year, month, day, hour, min, sec = dateStr:match("(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)")
+	return os.time({
+		year = tonumber(year),
+		month = tonumber(month),
+		day = tonumber(day),
+		hour = tonumber(hour),
+		min = tonumber(min),
+		sec = tonumber(sec)
+	})
+end
+
+--- Get information about the latest commit for a given repo and branch
+--- Example usage: lua_run XCF.GetLatestCommit("horizon-technologies", "XCF-3", "main", function(_, commit) PrintTable(commit) end)
+function XCF.GetLatestCommit(owner, repo, branch, callback)
+	local url = ("https://api.github.com/repos/%s/%s/commits?per_page=1&sha=%s"):format(owner, repo, branch)
+
+	HTTP({
+		url = url,
+		method = "GET",
+		success = function(_, body)
+			local data = util.JSONToTable(body)
+			if not data or not data[1] then
+				callback(false)
+				return
+			end
+
+			local raw = data[1]
+
+			local commit = {
+				short_sha  = raw.sha:sub(1, 7),
+				message    = raw.commit.message,
+				author     = raw.commit.author.name,
+				date       = GitDateToEpoch(raw.commit.author.date),
+				url        = raw.html_url
+			}
+
+			callback(commit)
+		end,
+		failed = function(err)
+			print("HTTP failed:", err)
+		end
+	})
+end
+
+--- Get information about a specific commit by SHA
+--- Example usage: lua_run XCF.GetCommit("horizon-technologies", "XCF-3", "abc1234", function(success, commit) PrintTable(commit) end)
+function XCF.GetCommit(owner, repo, sha, callback)
+	local url = ("https://api.github.com/repos/%s/%s/commits/%s"):format(owner, repo, sha)
+
+	HTTP({
+		url = url,
+		method = "GET",
+		success = function(_, body)
+			local data = util.JSONToTable(body)
+			if not data or not data.commit then
+				callback(false)
+				return
+			end
+
+			local commit = {
+				short_sha  = data.sha:sub(1, 7),
+				message    = data.commit.message,
+				author     = data.commit.author.name,
+				date       = GitDateToEpoch(data.commit.author.date),
+				url        = data.html_url
+			}
+
+			callback(commit)
+		end,
+		failed = function(err)
+			print("HTTP failed:", err)
+		end
+	})
+end
