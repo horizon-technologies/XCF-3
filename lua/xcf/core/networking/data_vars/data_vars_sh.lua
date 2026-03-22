@@ -195,7 +195,6 @@ do -- Automatic Menu Generation
 		if DataVar.Options.Hidden then return end
 		if not DataVar.Type.CreatePanel then return end
 		local Panel = DataVar.Type.CreatePanel(Menu, DataVar)
-		-- print(Panel, DataVar.Name, DataVar.Scope)
 		if Panel.BindToDataVar then Panel:BindToDataVar(DataVar.Name, DataVar.Scope, TargetRealm) end
 		if DataVar.Tooltip then Panel:SetTooltip(DataVar.Tooltip) end
 		return Panel

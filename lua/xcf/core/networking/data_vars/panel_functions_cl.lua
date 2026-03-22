@@ -78,7 +78,3 @@ function PanelMeta:BindToDataVarAdv(Name, Scope, setterName, getterName, changeN
 		SetValue(initial)
 	end
 end
-
--- hook.Add("XCF_OnDataVarChanged", "DebugPrintTestVar", function(DataVar, Value)
--- 	print(DataVar .. " changed to:", Value)
--- end)

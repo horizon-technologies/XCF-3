@@ -6,6 +6,7 @@ ENT.WireDebugName  = "XCF baseplate"
 
 ENT.XCF_Menu_Model = "models/hunter/blocks/cube075x075x075.mdl"
 ENT.XCF_Menu_Description = "Base of all XCF contraptions. Build your vehicle off of this."
+ENT.XCF_Limit = 2
 
 XCF.DefineDataVar("Type", ENT.XCF_Class, "EnumeratedString", "Ground", {Choices = {"Aircraft", "Ground", "Recreational"}})
 XCF.DefineDataVar("Size", ENT.XCF_Class, "Vector", Vector(144, 72, 1.5), {Min = Vector(36, 36, 0.5), Max = Vector(480, 120, 3)})

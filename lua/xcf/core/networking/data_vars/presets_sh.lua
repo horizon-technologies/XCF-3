@@ -18,6 +18,7 @@ function XCF.AddPreset(PresetName, PresetScope, DataVarScope, Data, TargetRealm)
 		TargetRealm = TargetRealm,
 	}
 
+	-- If no data is provided, scrape all existing data variables in the scope
 	if not Data then
 		NewPreset.Data = XCF.GetDataVars(PresetScope, TargetRealm)
 	end

@@ -46,6 +46,8 @@ function XCF.SpawnEntity(Class, Player, Pos, Angle, DataVarKVs, FromDupe, NoUndo
 		undo.Finish()
 	end
 
+	if Entity.UpdateOverlay then Entity:UpdateOverlay(true) end
+
 	return true, Entity
 end
 
@@ -65,8 +67,9 @@ function XCF.UpdateEntityData(Entity, DataVarKVs)
 	return Result, Message
 end
 
+--- Sets an entity's class by inferring it from the folder it was called from
 function XCF.SetupENT(ENT)
-	local Class  = string.Split(ENT.Folder, "/"); Class = Class[#Class]
+	local Class = string.Split(ENT.Folder, "/"); Class = Class[#Class]
 	ENT.XCF_Class = Class
 end
 
@@ -117,7 +120,6 @@ function XCF.AutoRegister(ENT, Class)
 
 	HijackAfter("OnDuplicated", function(self, EntTable)
 		if OnDuplicated then OnDuplicated(self, EntTable) end
-		self.BaseClass.OnDuplicated(self, EntTable)
 	end)
 
 	HijackAfter("PostEntityPaste", function(self, _, _, CreatedEntities)
@@ -135,6 +137,8 @@ function XCF.AutoRegister(ENT, Class)
 
 	-- Entity specific spawn function
 	function EntTable.Spawn(Player, Pos, Angle, DataVarKVs, FromDupe)
+		-- if ENT.XCF_Limit and not Player:CheckLimit(ENT.XCF_Limit) then return false, "You have reached the limit for this entity." end
+
 		local New = ents.Create(Class)
 		if not IsValid(New) then return end
 
