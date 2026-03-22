@@ -75,14 +75,14 @@ end
 
 --- Detours an entity's method, allowing you to run code after the original method
 --- This lets autoregister work on top of existing definitions
-local function HijackAfter(MethodName, DetourFunc)
+local function HijackBefore(MethodName, DetourFunc)
 	local Old = ENT[MethodName]
 	local Base = ENT.BaseClass and ENT.BaseClass[MethodName]
 
 	ENT[MethodName] = function(self, ...)
+		DetourFunc(self, ...)
 		if Old then Old(self, ...) end
 		if Base then Base(self, ...) end
-		DetourFunc(self, ...)
 	end
 end
 
@@ -103,11 +103,11 @@ function XCF.AutoRegister(ENT, Class)
 		XCF.RestoreEntity(self)
 	end
 
-	HijackAfter("OnRemove", function(self)
+	HijackBefore("OnRemove", function(self)
 		WireLib.Remove(self)
 	end)
 
-	HijackAfter("PreEntityCopy", function(self)
+	HijackBefore("PreEntityCopy", function(self)
 		self.XCF_DupeData = table.Copy(self.XCF_LiveData)
 		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or empty_table) do
 			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
@@ -118,11 +118,11 @@ function XCF.AutoRegister(ENT, Class)
 		end
 	end)
 
-	HijackAfter("OnDuplicated", function(self, EntTable)
+	HijackBefore("OnDuplicated", function(self, EntTable)
 		if OnDuplicated then OnDuplicated(self, EntTable) end
 	end)
 
-	HijackAfter("PostEntityPaste", function(self, _, _, CreatedEntities)
+	HijackBefore("PostEntityPaste", function(self, _, _, CreatedEntities)
 		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or empty_table) do
 			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
 			if DataVar and DataVar.Type.PostPaste then
