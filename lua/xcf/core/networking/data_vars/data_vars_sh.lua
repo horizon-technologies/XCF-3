@@ -7,7 +7,9 @@ do -- Macros for defining data variables and their types
 		local DataVarType = XCF.DataVarTypesByName[Name]
 		if not DataVarType then
 			DataVarType = {
-				Name = Name
+				Name = Name,
+				NetRead = net["Read" .. Name],
+				NetWrite = net["Write" .. Name],
 			}
 			XCF.DataVarTypesByName[Name] = DataVarType
 		end
@@ -218,48 +220,35 @@ do -- Defining default data variables and types
 
 	-- Basic types
 	local BoolDV = XCF.DefineDataVarType("Bool")
-	BoolDV.NetRead, BoolDV.NetWrite = net.ReadBool, net.WriteBool
 	BoolDV.CreatePanel = function(Menu, DataVar) return Menu:AddCheckbox(DataVar.Name) end
 
 	local StringDV = XCF.DefineDataVarType("String")
-	StringDV.NetRead, StringDV.NetWrite = net.ReadString, net.WriteString
 	StringDV.CreatePanel = function(Menu, DataVar) return Menu:AddTextEntry(DataVar.Name) end
 
 	local FloatDV = XCF.DefineDataVarType("Float")
-	FloatDV.NetRead, FloatDV.NetWrite = net.ReadFloat, net.WriteFloat
 	FloatDV.CreatePanel = CreateSliderMenu
 
 	local DoubleDV = XCF.DefineDataVarType("Double")
-	DoubleDV.NetRead, DoubleDV.NetWrite = net.ReadDouble, net.WriteDouble
 	DoubleDV.CreatePanel = CreateSliderMenu
 
-	local ColorDV = XCF.DefineDataVarType("Color")
-	ColorDV.NetRead, ColorDV.NetWrite = net.ReadColor, net.WriteColor
+	XCF.DefineDataVarType("Color")
 
-	local AngleDV = XCF.DefineDataVarType("Angle")
-	AngleDV.NetRead, AngleDV.NetWrite = net.ReadAngle, net.WriteAngle
+	XCF.DefineDataVarType("Angle")
 
 	local VectorDV = XCF.DefineDataVarType("Vector")
-	VectorDV.NetRead, VectorDV.NetWrite = net.ReadVector, net.WriteVector
 	VectorDV.CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2) end
 
-	local NormalDV = XCF.DefineDataVarType("Normal")
-	NormalDV.NetRead, NormalDV.NetWrite = net.ReadNormal, net.WriteNormal
+	XCF.DefineDataVarType("Normal")
 
-	local EntityDV = XCF.DefineDataVarType("Entity")
-	EntityDV.NetRead, EntityDV.NetWrite = net.ReadEntity, net.WriteEntity
+	XCF.DefineDataVarType("Entity")
 
-	local PlayerDV = XCF.DefineDataVarType("Player")
-	PlayerDV.NetRead, PlayerDV.NetWrite = net.ReadPlayer, net.WritePlayer
+	XCF.DefineDataVarType("Player")
 
-	local TableDV = XCF.DefineDataVarType("Table")
-	TableDV.NetRead, TableDV.NetWrite = net.ReadTable, net.WriteTable
+	XCF.DefineDataVarType("Table")
 
-	local DataDV = XCF.DefineDataVarType("Data")
-	DataDV.NetRead, DataDV.NetWrite = net.ReadData, net.WriteData
+	XCF.DefineDataVarType("Data")
 
-	local BitDV = XCF.DefineDataVarType("Bit")
-	BitDV.NetRead, BitDV.NetWrite = net.ReadBit, net.WriteBit
+	XCF.DefineDataVarType("Bit")
 
 	-- Signed integers (1 to 32 bits)
 	local IntDV = XCF.DefineDataVarType("Int")
