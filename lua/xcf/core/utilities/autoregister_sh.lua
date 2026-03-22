@@ -70,6 +70,19 @@ function XCF.SetupENT(ENT)
 	ENT.XCF_Class = Class
 end
 
+--- Detours an entity's method, allowing you to run code after the original method
+--- This lets autoregister work on top of existing definitions
+local function HijackAfter(MethodName, DetourFunc)
+	local Old = ENT[MethodName]
+	local Base = ENT.BaseClass and ENT.BaseClass[MethodName]
+
+	ENT[MethodName] = function(self, ...)
+		if Old then Old(self, ...) end
+		if Base then Base(self, ...) end
+		DetourFunc(self, ...)
+	end
+end
+
 function XCF.AutoRegister(ENT, Class)
 	if CLIENT then return end -- TODO: Maybe this is wrong?
 
@@ -87,14 +100,11 @@ function XCF.AutoRegister(ENT, Class)
 		XCF.RestoreEntity(self)
 	end
 
-	local OnRemove = ENT.OnRemove
-	function ENT:OnRemove(IsFullUpdate)
-		if OnRemove then OnRemove(self, IsFullUpdate) end
+	HijackAfter("OnRemove", function(self)
 		WireLib.Remove(self)
-	end
+	end)
 
-	local PreEntityCopy = ENT.PreEntityCopy
-	function ENT:PreEntityCopy()
+	HijackAfter("PreEntityCopy", function(self)
 		self.XCF_DupeData = table.Copy(self.XCF_LiveData)
 		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or empty_table) do
 			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
@@ -103,18 +113,14 @@ function XCF.AutoRegister(ENT, Class)
 				self.XCF_DupeData[DataVarName] = Sanitized
 			end
 		end
-		if PreEntityCopy then PreEntityCopy(self) end
-		self.BaseClass.PreEntityCopy(self)
-	end
+	end)
 
-	local OnDuplicated = ENT.OnDuplicated
-	function ENT:OnDuplicated(EntTable)
+	HijackAfter("OnDuplicated", function(self, EntTable)
 		if OnDuplicated then OnDuplicated(self, EntTable) end
 		self.BaseClass.OnDuplicated(self, EntTable)
-	end
+	end)
 
-	local PostEntityPaste = ENT.PostEntityPaste
-	function ENT:PostEntityPaste(Player, Ent, CreatedEntities)
+	HijackAfter("PostEntityPaste", function(self, _, _, CreatedEntities)
 		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or empty_table) do
 			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
 			if DataVar and DataVar.Type.PostPaste then
@@ -122,9 +128,7 @@ function XCF.AutoRegister(ENT, Class)
 				self.XCF_LiveData[DataVarName] = Sanitized
 			end
 		end
-		if PostEntityPaste then PostEntityPaste(self, Player, Ent, CreatedEntities) end
-		self.BaseClass.PostEntityPaste(self, Player, Ent, CreatedEntities)
-	end
+	end)
 
 	local EntTable = XCF.EntityTables[Class] or {}
 	XCF.EntityTables[Class] = EntTable
