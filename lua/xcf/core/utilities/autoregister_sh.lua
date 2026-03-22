@@ -96,7 +96,12 @@ function XCF.AutoRegister(ENT, Class)
 
 		-- Update the live data with the new values
 		for DataVarName, Value in pairs(DataVarKVs) do
-			self.XCF_LiveData[DataVarName] = Value
+			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
+			if DataVar and not DataVar.Type.PostPaste then
+				-- Data vars with postpaste should only be sanitized after pasting.
+				local Sanitized = DataVar.Type.Sanitize and DataVar.Type.Sanitize(Value) or Value
+				self.XCF_LiveData[DataVarName] = Sanitized
+			end
 		end
 
 		if self.XCF_PostUpdateEntityData then self:XCF_PostUpdateEntityData() end
@@ -112,8 +117,8 @@ function XCF.AutoRegister(ENT, Class)
 		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or empty_table) do
 			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
 			if DataVar and DataVar.Type.PreCopy then
-				local Sanitized = DataVar.Type.PreCopy(self, DataVar, self.XCF_DupeData[DataVarName])
-				self.XCF_DupeData[DataVarName] = Sanitized
+				local ToDupe = DataVar.Type.PreCopy(self, DataVar, self.XCF_DupeData[DataVarName])
+				self.XCF_DupeData[DataVarName] = ToDupe
 			end
 		end
 	end)
@@ -122,11 +127,14 @@ function XCF.AutoRegister(ENT, Class)
 		if OnDuplicated then OnDuplicated(self, EntTable) end
 	end)
 
+	-- TODO: Need to update overlay etc. after this?
 	HijackBefore("PostEntityPaste", function(self, _, _, CreatedEntities)
 		for _, DataVarName in ipairs(XCF.DataVarScopesOrdered[Class] or empty_table) do
 			local DataVar = XCF.DataVarsByScopeAndName[Class] and XCF.DataVarsByScopeAndName[Class][DataVarName]
 			if DataVar and DataVar.Type.PostPaste then
-				local Sanitized = DataVar.Type.PostPaste(self, DataVar, self.XCF_LiveData[DataVarName], CreatedEntities)
+				-- Sanitize the data var after pasting, using the created entities if needed.
+				local FromDupe = DataVar.Type.PostPaste(self, DataVar, self.XCF_LiveData[DataVarName], CreatedEntities)
+				local Sanitized = DataVar.Type.Sanitize and DataVar.Type.Sanitize(FromDupe) or FromDupe
 				self.XCF_LiveData[DataVarName] = Sanitized
 			end
 		end

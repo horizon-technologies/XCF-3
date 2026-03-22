@@ -221,46 +221,46 @@ do -- Defining default data variables and types
 	-- Basic types
 	local BoolDV = XCF.DefineDataVarType("Bool")
 	BoolDV.CreatePanel = function(Menu, DataVar) return Menu:AddCheckbox(DataVar.Name) end
-	BoolDV.Verify = function(x) return isbool(x) end
+	BoolDV.Sanitize = function(x) return isbool(x) and x end
 
 	local StringDV = XCF.DefineDataVarType("String")
 	StringDV.CreatePanel = function(Menu, DataVar) return Menu:AddTextEntry(DataVar.Name) end
-	StringDV.Verify = function(x) return isstring(x) end
+	StringDV.Sanitize = function(x) return isstring(x) and x end
 
 	local FloatDV = XCF.DefineDataVarType("Float")
 	FloatDV.CreatePanel = CreateSliderMenu
-	FloatDV.Verify = function(x) return isnumber(x) end
+	FloatDV.Sanitize = function(x) return isnumber(x) and x end
 
 	local DoubleDV = XCF.DefineDataVarType("Double")
 	DoubleDV.CreatePanel = CreateSliderMenu
-	DoubleDV.Verify = function(x) return isnumber(x) end
+	DoubleDV.Sanitize = function(x) return isnumber(x) and x end
 
 	local ColorDV = XCF.DefineDataVarType("Color")
-	ColorDV.Verify = function(x) return IsColor(x) end
+	ColorDV.Sanitize = function(x) return IsColor(x) and x end
 
 	local AngleDV = XCF.DefineDataVarType("Angle")
-	AngleDV.Verify = function(x) return isangle(x) end
+	AngleDV.Sanitize = function(x) return isangle(x) and x end
 
 	local VectorDV = XCF.DefineDataVarType("Vector")
 	VectorDV.CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2) end
 
 	local NormalDV = XCF.DefineDataVarType("Normal")
-	NormalDV.Verify = function(x) return isvector(x) and x:Length() == 1 end
+	NormalDV.Sanitize = function(x) return isvector(x) and x:Length() == 1 end
 
 	local EntityDV = XCF.DefineDataVarType("Entity")
-	EntityDV.Verify = function(x) return IsValid(x) end
+	EntityDV.Sanitize = function(x) return IsValid(x) and x end
 
 	local PlayerDV = XCF.DefineDataVarType("Player")
-	PlayerDV.Verify = function(x) return IsValid(x) and x:IsPlayer() end
+	PlayerDV.Sanitize = function(x) return IsValid(x) and x:IsPlayer() and x end
 
 	local TableDV = XCF.DefineDataVarType("Table")
-	TableDV.Verify = function(x) return istable(x) end
+	TableDV.Sanitize = function(x) return istable(x) and x end
 
 	local DataDV = XCF.DefineDataVarType("Data")
-	DataDV.Verify = function(x) return isstring(x) end
+	DataDV.Sanitize = function(x) return isstring(x) and x end
 
 	local BoolDV = XCF.DefineDataVarType("Bit")
-	BoolDV.Verify = function(x) return isbool(x) end
+	BoolDV.Sanitize = function(x) return isbool(x) and x end
 
 	-- Signed integers (1 to 32 bits)
 	local IntDV = XCF.DefineDataVarType("Int")
