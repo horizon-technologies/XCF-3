@@ -1,3 +1,5 @@
+local DefineClass = XCF.DefineClass
+
 local Primitive3D = DefineClass("Primitive3D", nil, function(Class, BaseClass)
 	function Class:initialize(options)
 		self.children = {}
