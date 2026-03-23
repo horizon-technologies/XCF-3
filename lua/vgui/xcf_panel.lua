@@ -217,10 +217,9 @@ function PANEL:AddTextEntry(LabelText)
 	return Entry, Base, Label
 end
 
+-- Advanced elements that are large are placed in separate files for cleanliness.
 include("advanced_panels/presets_bar.lua")(PANEL)
-
 include("advanced_panels/model_preview.lua")(PANEL)
-
 include("advanced_panels/vector_slider.lua")(PANEL)
 
 -- TODO: Add graph element

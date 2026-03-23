@@ -189,7 +189,7 @@ function XCF.RegisterExtension(Name)
 	local Version = XCF.CheckLocalVersion()
 	XCF.Extensions[Name] = XCF.Extensions[Name] or {}
 	XCF.Extensions[Name].Version = Version -- Version info for this repository
-	XCF.GetLatestCommit(Version.owner, Version.path, Version.head, function(commit)
+	XCF.GetLatestCommit(Version.owner, Name, Version.head, function(commit)
 		XCF.Extensions[Name].Commit = commit -- Latest commit info from github
 		XCF.Extensions[Name].Retrieved = true -- Whether the latest commit info was successfully retrieved from github
 	end)
