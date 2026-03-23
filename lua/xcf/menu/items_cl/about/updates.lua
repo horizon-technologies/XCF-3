@@ -10,6 +10,9 @@ end
 local function DrawGitStatus(Menu, Name, Version, MostRecentCommit, _)
 	local Base = Menu:AddCollapsible("[" .. Name .. "] - " .. Version.realm .. "", true, Version.realm == "Server" and "icon16/Server.png" or "icon16/computer.png")
 	local Status = Base:AddLabel("")
+	Status:SetText("Status: Unknown (Github API call failed)")
+	Status:SetTextColor(Color(255, 255, 100))
+
 	Base:AddLabel("Branch: " .. Version.head)
 	Base:AddLabel("Commit: " .. Version.code)
 
@@ -24,9 +27,6 @@ local function DrawGitStatus(Menu, Name, Version, MostRecentCommit, _)
 		Status:SetText("Status: " .. (Outdated and "Outdated" or "Up to Date"))
 		Status:SetTextColor(Outdated and Color(255, 100, 100) or Color(100, 255, 100))
 		DrawGitCommit(Base, MostRecentCommit)
-	else
-		Status:SetText("Status: Unknown (Github API call failed)")
-		Status:SetTextColor(Color(255, 255, 100))
 	end
 end
 

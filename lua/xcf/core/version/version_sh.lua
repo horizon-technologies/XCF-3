@@ -189,12 +189,11 @@ function XCF.RegisterExtension(Name)
 	local Version = XCF.CheckLocalVersion()
 	XCF.Extensions[Name] = XCF.Extensions[Name] or {}
 	XCF.Extensions[Name].Version = Version -- Version info for this repository
-	XCF.Extensions[Name].Retrieved = false -- Whether the latest commit info was successfully retrieved from github
 	XCF.GetLatestCommit(Version.owner, Version.path, Version.head, function(commit)
 		XCF.Extensions[Name].Commit = commit -- Latest commit info from github
-		XCF.Extensions[Name].Retrieved = true
+		XCF.Extensions[Name].Retrieved = true -- Whether the latest commit info was successfully retrieved from github
 	end)
 end
 
 XCF.RegisterExtension("XCF-3")
-XCF.RegisterExtension("XCF-3-Extension")
+-- XCF.RegisterExtension("XCF-3-Extension")
