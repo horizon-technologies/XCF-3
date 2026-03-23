@@ -242,7 +242,7 @@ do -- Defining default data variables and types
 	AngleDV.Sanitize = function(x) return isangle(x) and x end
 
 	local VectorDV = XCF.DefineDataVarType("Vector")
-	VectorDV.CreatePanel = function(Menu, DataVar) return Menu:AddVec3Slider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2) end
+	VectorDV.CreatePanel = function(Menu, DataVar) return Menu:AddVectorSlider(DataVar.Name, DataVar.Options.Min, DataVar.Options.Max, 2) end
 
 	local NormalDV = XCF.DefineDataVarType("Normal")
 	NormalDV.Sanitize = function(x) return isvector(x) and x:Length() == 1 end
