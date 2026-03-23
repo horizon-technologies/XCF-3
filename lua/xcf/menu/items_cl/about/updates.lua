@@ -4,7 +4,10 @@ local function DrawGitCommit(Menu, Commit)
 	Base:AddLabel("Message: " .. Commit.body)
 	Base:AddLabel("Author: " .. Commit.author)
 	Base:AddLabel("Date: " .. os.date("%Y-%m-%d %H:%M:%S", Commit.date))
-	Base:AddButton("View on GitHub", function() gui.OpenURL(Commit.url) end)
+	local Button = Base:AddButton("View on GitHub")
+	function Button:DoClickInternal()
+		gui.OpenURL(Commit.url)
+	end
 end
 
 local function DrawGitStatus(Menu, Name, Version, MostRecentCommit, _)
