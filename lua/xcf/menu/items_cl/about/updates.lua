@@ -1,5 +1,3 @@
--- TODO: deal with running out of github API calls
-
 local function DrawGitCommit(Menu, Commit)
 	local Base = Menu:AddCollapsible("Latest Commit", false)
 	Base:AddLabel(Commit.title)
@@ -9,10 +7,9 @@ local function DrawGitCommit(Menu, Commit)
 	Base:AddButton("View on GitHub", function() gui.OpenURL(Commit.url) end)
 end
 
-local function DrawGitStatus(Menu, Version, MostRecentCommit)
-	local Base = Menu:AddCollapsible("[" .. Version.path .. "] - " .. Version.realm .. "", true, Version.realm == "Server" and "icon16/Server.png" or "icon16/computer.png")
-	local Outdated = Version.date < MostRecentCommit.date
-	Base:AddLabel("Status: " .. (Outdated and "Outdated" or "Up to Date")):SetColor(Outdated and Color(255, 100, 100) or Color(100, 255, 100))
+local function DrawGitStatus(Menu, Name, Version, MostRecentCommit, _)
+	local Base = Menu:AddCollapsible("[" .. Name .. "] - " .. Version.realm .. "", true, Version.realm == "Server" and "icon16/Server.png" or "icon16/computer.png")
+	local Status = Base:AddLabel("")
 	Base:AddLabel("Branch: " .. Version.head)
 	Base:AddLabel("Commit: " .. Version.code)
 
@@ -22,12 +19,23 @@ local function DrawGitStatus(Menu, Version, MostRecentCommit)
 		SetClipboardText(Version.code)
 	end
 
-	DrawGitCommit(Base, MostRecentCommit)
+	if MostRecentCommit then
+		local Outdated = Version.date < MostRecentCommit.date
+		Status:SetText("Status: " .. (Outdated and "Outdated" or "Up to Date"))
+		Status:SetTextColor(Outdated and Color(255, 100, 100) or Color(100, 255, 100))
+		DrawGitCommit(Base, MostRecentCommit)
+	else
+		Status:SetText("Status: Unknown (Github API call failed)")
+		Status:SetTextColor(Color(255, 255, 100))
+	end
 end
 
 local function CreateMenu(Menu)
-	DrawGitStatus(Menu, XCF.ClientVersion, XCF.MostRecentCommit)
-	DrawGitStatus(Menu, XCF.ServerVersion, XCF.MostRecentCommit)
+	for ExtensionName, ClientExtension in pairs(XCF.Extensions) do
+		ServerExtension = XCF.ServerExtensions[ExtensionName]
+		DrawGitStatus(Menu, ExtensionName, ClientExtension.Version, ClientExtension.Commit, ClientExtension.Retrieved)
+		DrawGitStatus(Menu, ExtensionName, ServerExtension.Version, ServerExtension.Commit, ServerExtension.Retrieved)
+	end
 end
 
-XCF.AddMenuItem(2, "Updates", "icon16/newspaper.png", CreateMenu, "About")
+XCF.AddMenuItem(2, "Updates", "icon16/newspaper.png", CreateMenu, "About", true)

@@ -1,1 +1,1 @@
-XCF.AddMenuItem(1, "Baseplates", "icon16/shape_square.png", XCF.EntityMenuCallback("xcf_baseplate"), "Integral", true)
+XCF.AddMenuItem(1, "Baseplates", "icon16/shape_square.png", XCF.EntityMenuCallback("xcf_baseplate"), "Integral")
